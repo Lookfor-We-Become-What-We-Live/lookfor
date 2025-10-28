@@ -67,12 +67,12 @@ const Auth = () => {
             </div>
           </div>
           <CardTitle className="text-3xl font-bold">
-            {isLogin ? "Welcome Back" : "Join the Adventure"}
+            {isLogin ? "Welcome Back" : "Join Lookfor"}
           </CardTitle>
           <CardDescription>
             {isLogin
-              ? "Sign in to explore and join experiences"
-              : "Create an account to start discovering experiences"}
+              ? "Sign in to explore and create experiences"
+              : "Create an account to start discovering and sharing"}
           </CardDescription>
         </CardHeader>
         <CardContent>

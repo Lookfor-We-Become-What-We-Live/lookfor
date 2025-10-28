@@ -1,4 +1,4 @@
-import { Compass, Luggage, LogOut, User } from "lucide-react";
+import { Compass, Luggage, LogOut, User, Plus } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-const Navigation = () => {
+interface NavigationProps {
+  onCreateClick?: () => void;
+}
+
+const Navigation = ({ onCreateClick }: NavigationProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -29,10 +33,10 @@ const Navigation = () => {
           <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-lg">
             <Compass className="w-5 h-5 text-white" />
           </div>
-          <span className="hidden sm:inline">Xplore</span>
+          <span className="hidden sm:inline">Lookfor</span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <Link to="/">
             <Button
               variant={location.pathname === "/" ? "default" : "ghost"}
@@ -43,6 +47,19 @@ const Navigation = () => {
               <span className="hidden sm:inline">Explore</span>
             </Button>
           </Link>
+          
+          {onCreateClick && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={onCreateClick}
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create</span>
+            </Button>
+          )}
+          
           <Link to="/luggage">
             <Button
               variant={location.pathname === "/luggage" ? "default" : "ghost"}

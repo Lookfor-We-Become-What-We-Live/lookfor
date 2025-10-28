@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceDetailModal from "@/components/ExperienceDetailModal";
+import CreateExperienceModal from "@/components/CreateExperienceModal";
 import MapView from "@/components/MapView";
 import SearchBar from "@/components/SearchBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +35,7 @@ const Index = () => {
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [selectedExperienceId, setSelectedExperienceId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [priceFilter, setPriceFilter] = useState("all");
@@ -184,7 +186,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      <Navigation onCreateClick={() => setCreateModalOpen(true)} />
       <div className="container py-6 space-y-4">
         <SearchBar
           searchQuery={searchQuery}
@@ -250,6 +252,12 @@ const Index = () => {
         }}
         isEnrolled={selectedExperience ? enrolledIds.has(selectedExperience.id) : false}
         onEnrollmentChange={handleEnrollmentChange}
+      />
+
+      <CreateExperienceModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        onCreated={fetchExperiences}
       />
     </div>
   );
