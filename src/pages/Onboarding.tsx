@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Tag } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User, Tag, Upload } from "lucide-react";
 
 const INTEREST_OPTIONS = [
   "Wellness",
@@ -31,6 +32,8 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
 
   const toggleInterest = (interest: string) => {
     if (selectedInterests.includes(interest)) {
@@ -42,12 +45,24 @@ const Onboarding = () => {
     }
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     if (!displayName.trim()) {
-      toast.error("Please enter your name");
+      toast.error("Please enter your full name");
       return;
     }
 
@@ -58,11 +73,32 @@ const Onboarding = () => {
 
     setLoading(true);
     try {
+      let avatarUrl = null;
+
+      // Upload avatar if selected
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split(".").pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(fileName, avatarFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from("avatars")
+          .getPublicUrl(fileName);
+
+        avatarUrl = urlData.publicUrl;
+      }
+
       const { error } = await supabase
         .from("profiles")
         .update({
           display_name: displayName,
           interests: selectedInterests,
+          avatar_url: avatarUrl,
         })
         .eq("user_id", user.id);
 
@@ -88,16 +124,44 @@ const Onboarding = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex flex-col items-center gap-4">
+              <Avatar className="w-24 h-24">
+                {avatarPreview ? (
+                  <AvatarImage src={avatarPreview} alt="Profile preview" />
+                ) : (
+                  <AvatarFallback className="bg-primary/10">
+                    <User className="w-12 h-12 text-primary" />
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <Label
+                htmlFor="avatar"
+                className="cursor-pointer flex items-center gap-2 text-sm text-primary hover:underline"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Profile Picture
+              </Label>
+              <Input
+                id="avatar"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="displayName" className="flex items-center gap-2">
               <User className="w-4 h-4 text-primary" />
-              Your Name *
+              Full Name *
             </Label>
             <Input
               id="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Enter your name"
+              placeholder="Enter your full name"
               required
             />
           </div>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin } from "lucide-react";
@@ -20,6 +20,12 @@ const GooglePlacesAutocomplete = ({
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Update input when external value changes (only once)
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
 
   const searchPlaces = useCallback(async (query: string) => {
     if (!query || query.length < 3) {
@@ -46,7 +52,17 @@ const GooglePlacesAutocomplete = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
-    searchPlaces(newValue);
+    setShowSuggestions(true);
+
+    // Clear previous timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Set new timer for debounced search (500ms delay)
+    debounceTimer.current = setTimeout(() => {
+      searchPlaces(newValue);
+    }, 500);
   };
 
   const handlePlaceSelect = (place: any) => {
