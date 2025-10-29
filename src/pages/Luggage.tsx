@@ -6,6 +6,10 @@ import Navigation from "@/components/Navigation";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceDetailModal from "@/components/ExperienceDetailModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { User } from "lucide-react";
 import { Loader2 } from "lucide-react";
 
 interface Experience {
@@ -37,6 +41,11 @@ const Luggage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [profile, setProfile] = useState<{
+    display_name: string;
+    avatar_url: string | null;
+    interests: string[];
+  } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -47,8 +56,26 @@ const Luggage = () => {
   useEffect(() => {
     if (user) {
       fetchEnrollments();
+      fetchProfile();
     }
   }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url, interests")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
   const fetchEnrollments = async () => {
     if (!user) return;
@@ -132,6 +159,31 @@ const Luggage = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="container py-8">
+        {profile && (
+          <Card className="p-6 mb-8">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <Avatar className="w-24 h-24">
+                <AvatarImage src={profile.avatar_url || undefined} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                  <User className="w-12 h-12" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 text-center sm:text-left">
+                <h2 className="text-2xl font-bold mb-2">
+                  {profile.display_name || "Anonymous User"}
+                </h2>
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                  {profile.interests?.map((interest) => (
+                    <Badge key={interest} variant="secondary">
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+        
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Your Luggage</h1>
           <p className="text-muted-foreground">

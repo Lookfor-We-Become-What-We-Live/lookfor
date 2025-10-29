@@ -20,7 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, MapPin, DollarSign, Users, Image } from "lucide-react";
+import { Calendar, DollarSign, Users, Image } from "lucide-react";
+import GooglePlacesAutocomplete from "./GooglePlacesAutocomplete";
 
 interface CreateExperienceModalProps {
   open: boolean;
@@ -193,46 +194,17 @@ const CreateExperienceModal = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="locationAddress" className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-secondary" />
-              Location Address *
-            </Label>
-            <Input
-              id="locationAddress"
-              value={formData.locationAddress}
-              onChange={(e) => handleChange("locationAddress", e.target.value)}
-              placeholder="e.g., Santa Monica Beach, CA"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="locationLat">Latitude *</Label>
-              <Input
-                id="locationLat"
-                type="number"
-                step="any"
-                value={formData.locationLat}
-                onChange={(e) => handleChange("locationLat", e.target.value)}
-                placeholder="e.g., 34.0195"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="locationLng">Longitude *</Label>
-              <Input
-                id="locationLng"
-                type="number"
-                step="any"
-                value={formData.locationLng}
-                onChange={(e) => handleChange("locationLng", e.target.value)}
-                placeholder="e.g., -118.4912"
-                required
-              />
-            </div>
-          </div>
+          <GooglePlacesAutocomplete
+            value={formData.locationAddress}
+            onPlaceSelect={(place) => {
+              setFormData((prev) => ({
+                ...prev,
+                locationAddress: place.address,
+                locationLat: place.lat.toString(),
+                locationLng: place.lng.toString(),
+              }));
+            }}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">

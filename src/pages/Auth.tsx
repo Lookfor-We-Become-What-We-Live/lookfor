@@ -47,7 +47,7 @@ const Auth = () => {
           toast.error(error.message);
         } else {
           toast.success("Account created! Welcome aboard!");
-          navigate("/");
+          navigate("/onboarding");
         }
       }
     } catch (error: any) {
