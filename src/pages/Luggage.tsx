@@ -9,8 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { User, LogOut, Lock, Moon, Sun } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 interface Experience {
   id: string;
@@ -34,8 +39,9 @@ interface Enrollment {
 }
 
 const Luggage = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const [activeEnrollments, setActiveEnrollments] = useState<Enrollment[]>([]);
   const [pastEnrollments, setPastEnrollments] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +52,9 @@ const Luggage = () => {
     avatar_url: string | null;
     interests: string[];
   } | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -147,6 +156,46 @@ const Luggage = () => {
     setModalOpen(true);
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast.success("Password updated successfully");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -192,12 +241,15 @@ const Luggage = () => {
         </div>
 
         <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="active">
               Active ({activeEnrollments.length})
             </TabsTrigger>
             <TabsTrigger value="past">
               Past ({pastEnrollments.length})
+            </TabsTrigger>
+            <TabsTrigger value="settings">
+              Settings
             </TabsTrigger>
           </TabsList>
 
@@ -238,6 +290,77 @@ const Luggage = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="settings" className="mt-6">
+            <div className="max-w-2xl space-y-6">
+              {/* Change Password */}
+              <Card className="p-6">
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Lock className="w-5 h-5" />
+                  Change Password
+                </h3>
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm new password"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" disabled={updatingPassword}>
+                    {updatingPassword ? "Updating..." : "Update Password"}
+                  </Button>
+                </form>
+              </Card>
+
+              {/* Theme Toggle */}
+              <Card className="p-6">
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                  Theme
+                </h3>
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground">
+                    Current theme: {theme === "dark" ? "Dark" : "Light"}
+                  </p>
+                  <Button onClick={toggleTheme} variant="outline">
+                    Switch to {theme === "dark" ? "Light" : "Dark"} Mode
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Sign Out */}
+              <Card className="p-6">
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <LogOut className="w-5 h-5" />
+                  Account
+                </h3>
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground">
+                    Sign out of your account
+                  </p>
+                  <Button onClick={handleSignOut} variant="destructive">
+                    Sign Out
+                  </Button>
+                </div>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

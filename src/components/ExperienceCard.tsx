@@ -2,6 +2,8 @@ import { Calendar, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { getCategoryImage } from "@/lib/categoryImages";
+import { formatAddress } from "@/lib/formatAddress";
 
 interface ExperienceCardProps {
   id: string;
@@ -38,7 +40,7 @@ const ExperienceCard = ({
     >
       <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
         <img
-          src={imageUrl || "https://images.unsplash.com/photo-1522071820081-009f0129c71c"}
+          src={imageUrl || getCategoryImage(category)}
           alt={title}
           className="w-full h-full object-cover transition-transform hover:scale-105"
         />
@@ -65,7 +67,7 @@ const ExperienceCard = ({
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-secondary" />
-            <span className="line-clamp-1">{locationAddress}</span>
+            <span className="line-clamp-1">{formatAddress(locationAddress)}</span>
           </div>
           {capacity && (
             <div className="flex items-center gap-2">

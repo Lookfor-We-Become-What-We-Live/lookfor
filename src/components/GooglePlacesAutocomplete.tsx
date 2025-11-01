@@ -66,12 +66,29 @@ const GooglePlacesAutocomplete = ({
   };
 
   const handlePlaceSelect = (place: any) => {
-    const address = place.display_name;
+    const fullAddress = place.display_name;
     const lat = parseFloat(place.lat);
     const lng = parseFloat(place.lon);
 
-    setInputValue(address);
-    onPlaceSelect({ address, lat, lng });
+    // Format address to show only street, postal code, city, country
+    const parts = fullAddress.split(", ");
+    let formattedAddress = fullAddress;
+    
+    if (parts.length >= 3) {
+      const country = parts[parts.length - 1];
+      const city = parts[parts.length - 3] || parts[parts.length - 2];
+      const street = parts[0];
+      const postalCodePart = parts.find(p => /\d/.test(p));
+      
+      if (postalCodePart) {
+        formattedAddress = `${street}, ${postalCodePart}, ${city}, ${country}`;
+      } else {
+        formattedAddress = `${street}, ${city}, ${country}`;
+      }
+    }
+
+    setInputValue(formattedAddress);
+    onPlaceSelect({ address: formattedAddress, lat, lng });
     setSuggestions([]);
     setShowSuggestions(false);
   };

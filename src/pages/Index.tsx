@@ -8,8 +8,8 @@ import ExperienceDetailModal from "@/components/ExperienceDetailModal";
 import CreateExperienceModal from "@/components/CreateExperienceModal";
 import MapView from "@/components/MapView";
 import SearchBar from "@/components/SearchBar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Experience {
   id: string;
@@ -43,7 +43,6 @@ const Index = () => {
   const [mapApiKey, setMapApiKey] = useState(
     localStorage.getItem("mapbox_api_key") || ""
   );
-  const [viewMode, setViewMode] = useState<"feed" | "map">("feed");
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -203,12 +202,11 @@ const Index = () => {
     if (experience) {
       setSelectedExperienceId(experienceId);
       
-      // Switch to feed view and scroll to card
-      setViewMode("feed");
+      // Scroll to card in bottom section
       setTimeout(() => {
         cardRefs.current[experienceId]?.scrollIntoView({
           behavior: "smooth",
-          block: "center",
+          block: "nearest",
         });
       }, 100);
     }
@@ -228,9 +226,9 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background">
       <Navigation onCreateClick={() => setCreateModalOpen(true)} />
-      <div className="container py-6 space-y-4">
+      <div className="container py-4 space-y-4">
         <SearchBar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -239,49 +237,49 @@ const Index = () => {
           priceFilter={priceFilter}
           onPriceFilterChange={setPriceFilter}
         />
+      </div>
 
-        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "feed" | "map")}>
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="feed">Feed</TabsTrigger>
-            <TabsTrigger value="map">Map</TabsTrigger>
-          </TabsList>
+      {/* Unified Map + Feed View */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Map Section */}
+        <div className="h-[50vh] w-full">
+          <MapView
+            experiences={filteredExperiences}
+            selectedExperienceId={selectedExperienceId}
+            onMarkerClick={handleMarkerClick}
+            apiKey={mapApiKey}
+            onApiKeyChange={setMapApiKey}
+          />
+        </div>
 
-          <TabsContent value="feed" className="mt-6">
+        {/* Feed Section at Bottom */}
+        <div className="flex-1 border-t bg-background">
+          <div className="container h-full py-4">
             {filteredExperiences.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <p>No experiences found.</p>
                 <p className="text-sm mt-2">Try adjusting your filters.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredExperiences.map((experience) => (
-                  <div
-                    key={experience.id}
-                    ref={(el) => (cardRefs.current[experience.id] = el)}
-                  >
-                    <ExperienceCard
-                      {...experience}
-                      onClick={() => handleCardClick(experience)}
-                      isSelected={selectedExperienceId === experience.id}
-                    />
-                  </div>
-                ))}
-              </div>
+              <ScrollArea className="h-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-4">
+                  {filteredExperiences.map((experience) => (
+                    <div
+                      key={experience.id}
+                      ref={(el) => (cardRefs.current[experience.id] = el)}
+                    >
+                      <ExperienceCard
+                        {...experience}
+                        onClick={() => handleCardClick(experience)}
+                        isSelected={selectedExperienceId === experience.id}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
             )}
-          </TabsContent>
-
-          <TabsContent value="map" className="mt-6">
-            <div className="h-[calc(100vh-280px)] min-h-[400px] w-full">
-              <MapView
-                experiences={filteredExperiences}
-                selectedExperienceId={selectedExperienceId}
-                onMarkerClick={handleMarkerClick}
-                apiKey={mapApiKey}
-                onApiKeyChange={setMapApiKey}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
 
       <ExperienceDetailModal

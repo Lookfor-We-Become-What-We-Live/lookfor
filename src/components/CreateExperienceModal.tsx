@@ -224,30 +224,16 @@ const CreateExperienceModal = ({
             <div className="space-y-2">
               <Label htmlFor="capacity" className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-accent" />
-                Capacity (optional)
+                How many people are you looking for?
               </Label>
               <Input
                 id="capacity"
                 type="number"
                 value={formData.capacity}
                 onChange={(e) => handleChange("capacity", e.target.value)}
-                placeholder="e.g., 20"
+                placeholder="e.g., 5"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="imageUrl" className="flex items-center gap-2">
-              <Image className="w-4 h-4 text-primary" />
-              Image URL (optional)
-            </Label>
-            <Input
-              id="imageUrl"
-              type="url"
-              value={formData.imageUrl}
-              onChange={(e) => handleChange("imageUrl", e.target.value)}
-              placeholder="https://images.unsplash.com/photo-..."
-            />
           </div>
 
           <div className="flex gap-3 pt-4">

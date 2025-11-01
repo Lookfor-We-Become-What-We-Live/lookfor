@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import logoImage from "@/assets/lookfor-logo.jpg";
 
 interface NavigationProps {
   onCreateClick?: () => void;
@@ -30,9 +31,11 @@ const Navigation = ({ onCreateClick }: NavigationProps) => {
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-semibold text-xl">
-          <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-lg">
-            <Compass className="w-5 h-5 text-white" />
-          </div>
+          <img 
+            src={logoImage} 
+            alt="Lookfor Logo" 
+            className="w-10 h-10 rounded-lg object-cover"
+          />
           <span className="hidden sm:inline">Lookfor</span>
         </Link>
 
