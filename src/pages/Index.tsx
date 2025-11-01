@@ -226,7 +226,7 @@ const Index = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navigation onCreateClick={() => setCreateModalOpen(true)} />
       <div className="container py-4 space-y-4">
         <SearchBar
@@ -240,9 +240,9 @@ const Index = () => {
       </div>
 
       {/* Unified Map + Feed View */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-col">
         {/* Map Section */}
-        <div className="h-[50vh] w-full">
+        <div style={{ height: "70vh", minHeight: "500px" }} className="w-full">
           <MapView
             experiences={filteredExperiences}
             selectedExperienceId={selectedExperienceId}
@@ -253,30 +253,29 @@ const Index = () => {
         </div>
 
         {/* Feed Section at Bottom */}
-        <div className="flex-1 border-t bg-background">
-          <div className="container h-full py-4">
+        <div className="border-t bg-background">
+          <div className="container py-8">
+            <h2 className="text-2xl font-bold mb-6">Nearby Experiences</h2>
             {filteredExperiences.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <p>No experiences found.</p>
                 <p className="text-sm mt-2">Try adjusting your filters.</p>
               </div>
             ) : (
-              <ScrollArea className="h-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-4">
-                  {filteredExperiences.map((experience) => (
-                    <div
-                      key={experience.id}
-                      ref={(el) => (cardRefs.current[experience.id] = el)}
-                    >
-                      <ExperienceCard
-                        {...experience}
-                        onClick={() => handleCardClick(experience)}
-                        isSelected={selectedExperienceId === experience.id}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
+                {filteredExperiences.map((experience) => (
+                  <div
+                    key={experience.id}
+                    ref={(el) => (cardRefs.current[experience.id] = el)}
+                  >
+                    <ExperienceCard
+                      {...experience}
+                      onClick={() => handleCardClick(experience)}
+                      isSelected={selectedExperienceId === experience.id}
+                    />
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
