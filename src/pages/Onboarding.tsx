@@ -126,7 +126,10 @@ const Onboarding = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="flex flex-col items-center gap-4">
-              <Avatar className="w-24 h-24">
+              <Avatar 
+                className="w-24 h-24 cursor-pointer" 
+                onClick={() => document.getElementById('avatar')?.click()}
+              >
                 {avatarPreview ? (
                   <AvatarImage src={avatarPreview} alt="Profile preview" />
                 ) : (

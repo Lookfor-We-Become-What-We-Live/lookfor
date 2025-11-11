@@ -10,8 +10,9 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Settings as SettingsIcon } from "lucide-react";
+import { User, Settings as SettingsIcon, Camera } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface Experience {
   id: string;
@@ -47,6 +48,7 @@ const Luggage = () => {
     avatar_url: string | null;
     interests: string[];
   } | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -148,6 +150,42 @@ const Luggage = () => {
     setModalOpen(true);
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: urlData.publicUrl })
+        .eq("user_id", user.id);
+
+      if (updateError) throw updateError;
+
+      await fetchProfile();
+      // toast.success("Profile picture updated!");
+    } catch (error: any) {
+      console.error("Error updating avatar:", error);
+      // toast.error(error.message || "Failed to update profile picture");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -163,12 +201,26 @@ const Luggage = () => {
         {profile && (
           <Card className="p-6 mb-8">
             <div className="flex flex-col sm:flex-row items-center gap-6">
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  <User className="w-12 h-12" />
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="w-24 h-24 cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
+                  <AvatarImage src={profile.avatar_url || undefined} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                    <User className="w-12 h-12" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer"
+                  onClick={() => document.getElementById('avatar-upload')?.click()}>
+                  <Camera className="w-4 h-4" />
+                </div>
+                <Input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                  disabled={uploadingAvatar}
+                />
+              </div>
               <div className="flex-1 text-center sm:text-left">
                 <h2 className="text-2xl font-bold mb-2">
                   {profile.display_name || "Anonymous User"}

@@ -45,7 +45,7 @@ const ExperienceCard = ({
           className="w-full h-full object-cover transition-transform hover:scale-105"
         />
         <div className="absolute top-3 left-3">
-          <Badge className="bg-white/90 text-foreground hover:bg-white">
+          <Badge className="bg-white/90 dark:bg-slate-700 text-foreground dark:text-white hover:bg-white dark:hover:bg-slate-600">
             {category}
           </Badge>
         </div>

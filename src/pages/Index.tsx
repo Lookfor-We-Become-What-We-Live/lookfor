@@ -85,9 +85,11 @@ const Index = () => {
 
   const fetchExperiences = async () => {
     try {
+      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from("experiences")
         .select("*")
+        .gte("date_time_start", now)
         .order("date_time_start", { ascending: true });
 
       if (error) throw error;

@@ -49,6 +49,8 @@ const ExperienceDetailModal = ({
 
   if (!experience) return null;
 
+  const isPastExperience = new Date(experience.dateTimeStart) < new Date();
+
   const handleEnroll = async () => {
     if (!user) {
       toast.error("Please sign in to join experiences");
@@ -152,11 +154,11 @@ const ExperienceDetailModal = ({
         <div className="flex gap-3 pt-4">
           <Button
             onClick={handleEnroll}
-            disabled={loading}
+            disabled={loading || (isEnrolled && isPastExperience)}
             className="flex-1"
             variant={isEnrolled ? "outline" : "default"}
           >
-            {loading ? "Loading..." : isEnrolled ? "Leave Experience" : "Join Experience"}
+            {loading ? "Loading..." : isEnrolled ? (isPastExperience ? "Experience Completed" : "Leave Experience") : "Join Experience"}
           </Button>
         </div>
       </DialogContent>
