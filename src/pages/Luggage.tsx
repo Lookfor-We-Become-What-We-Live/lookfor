@@ -40,6 +40,7 @@ const Luggage = () => {
   const navigate = useNavigate();
   const [activeEnrollments, setActiveEnrollments] = useState<Enrollment[]>([]);
   const [pastEnrollments, setPastEnrollments] = useState<Enrollment[]>([]);
+  const [hostedExperiences, setHostedExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -60,6 +61,7 @@ const Luggage = () => {
     if (user) {
       fetchEnrollments();
       fetchProfile();
+      fetchHostedExperiences();
     }
   }, [user]);
 
@@ -142,6 +144,39 @@ const Luggage = () => {
       console.error("Error fetching enrollments:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHostedExperiences = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("experiences")
+        .select("*")
+        .eq("host_user_id", user.id)
+        .order("date_time_start", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = data.map((exp: any) => ({
+        id: exp.id,
+        title: exp.title,
+        description: exp.description,
+        category: exp.category,
+        tags: exp.tags,
+        dateTimeStart: exp.date_time_start,
+        locationAddress: exp.location_address,
+        locationLat: exp.location_lat,
+        locationLng: exp.location_lng,
+        price: exp.price,
+        capacity: exp.capacity,
+        imageUrl: exp.image_url,
+      }));
+
+      setHostedExperiences(mapped);
+    } catch (error) {
+      console.error("Error fetching hosted experiences:", error);
     }
   };
 
@@ -254,20 +289,44 @@ const Luggage = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+        <Tabs defaultValue="hosted" className="w-full">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
+            <TabsTrigger value="hosted">
+              Hosted ({hostedExperiences.length})
+            </TabsTrigger>
             <TabsTrigger value="active">
-              Active ({activeEnrollments.length})
+              Joined ({activeEnrollments.length})
             </TabsTrigger>
             <TabsTrigger value="past">
               Past ({pastEnrollments.length})
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="hosted" className="mt-6">
+            {hostedExperiences.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>No hosted experiences yet.</p>
+                <p className="text-sm mt-2">
+                  Create your first experience to share with others!
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {hostedExperiences.map((experience) => (
+                  <ExperienceCard
+                    key={experience.id}
+                    {...experience}
+                    onClick={() => handleCardClick(experience)}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="active" className="mt-6">
             {activeEnrollments.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p>No active experiences yet.</p>
+                <p>No joined experiences yet.</p>
                 <p className="text-sm mt-2">
                   Explore the feed to find exciting experiences!
                 </p>

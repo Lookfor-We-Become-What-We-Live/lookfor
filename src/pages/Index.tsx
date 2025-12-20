@@ -155,9 +155,10 @@ const Index = () => {
   const applyFilters = () => {
     let filtered = [...experiences];
 
-    // Geographic filter (20km radius)
+    // Geographic filter (20km radius) - only apply if user location is available
+    // If no location, show all experiences
     if (userLocation) {
-      filtered = filtered.filter((exp) => {
+      const nearbyExperiences = filtered.filter((exp) => {
         const distance = calculateDistance(
           userLocation.lat,
           userLocation.lng,
@@ -166,6 +167,10 @@ const Index = () => {
         );
         return distance <= 20; // 20km radius
       });
+      // Only apply geo filter if there are nearby experiences, otherwise show all
+      if (nearbyExperiences.length > 0) {
+        filtered = nearbyExperiences;
+      }
     }
 
     // Search query
