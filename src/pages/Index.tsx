@@ -24,6 +24,7 @@ interface Experience {
   price?: number;
   capacity?: number;
   imageUrl?: string;
+  hostUserId?: string;
 }
 
 const Index = () => {
@@ -107,6 +108,7 @@ const Index = () => {
         price: exp.price,
         capacity: exp.capacity,
         imageUrl: exp.image_url,
+        hostUserId: exp.host_user_id,
       }));
 
       setExperiences(mapped);

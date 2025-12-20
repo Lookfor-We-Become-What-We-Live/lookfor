@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Compass } from "lucide-react";
+import lookforLogo from "@/assets/lookfor-logo.jpg";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -62,9 +62,11 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-gradient-to-br from-primary to-accent rounded-2xl">
-              <Compass className="w-8 h-8 text-white" />
-            </div>
+            <img
+              src={lookforLogo}
+              alt="Lookfor"
+              className="w-20 h-20 rounded-2xl object-cover"
+            />
           </div>
           <CardTitle className="text-3xl font-bold">
             {isLogin ? "Welcome Back" : "Join Lookfor"}

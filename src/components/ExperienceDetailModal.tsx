@@ -8,11 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import ExperienceComments from "./ExperienceComments";
 
 interface Experience {
   id: string;
@@ -27,6 +29,12 @@ interface Experience {
   price?: number;
   capacity?: number;
   imageUrl?: string;
+  hostUserId?: string;
+}
+
+interface HostProfile {
+  display_name: string | null;
+  avatar_url: string | null;
 }
 
 interface ExperienceDetailModalProps {
@@ -46,6 +54,35 @@ const ExperienceDetailModal = ({
 }: ExperienceDetailModalProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [enrollmentCount, setEnrollmentCount] = useState(0);
+  const [hostProfile, setHostProfile] = useState<HostProfile | null>(null);
+
+  useEffect(() => {
+    if (experience && open) {
+      fetchEnrollmentCount();
+      fetchHostProfile();
+    }
+  }, [experience, open]);
+
+  const fetchEnrollmentCount = async () => {
+    if (!experience) return;
+    const { count } = await supabase
+      .from("enrollments")
+      .select("*", { count: "exact", head: true })
+      .eq("experience_id", experience.id)
+      .eq("status", "joined");
+    setEnrollmentCount(count || 0);
+  };
+
+  const fetchHostProfile = async () => {
+    if (!experience?.hostUserId) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("display_name, avatar_url")
+      .eq("user_id", experience.hostUserId)
+      .single();
+    setHostProfile(data);
+  };
 
   if (!experience) return null;
 
@@ -95,6 +132,7 @@ const ExperienceDetailModal = ({
           toast.success("Joined the experience!");
         }
       }
+      fetchEnrollmentCount();
       onEnrollmentChange();
     } catch (error: any) {
       toast.error(error.message || "Something went wrong");
@@ -114,6 +152,23 @@ const ExperienceDetailModal = ({
               className="w-full h-full object-cover"
             />
           </div>
+          
+          {/* Host Profile */}
+          {hostProfile && (
+            <div className="flex items-center gap-3 mb-4">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={hostProfile.avatar_url || undefined} />
+                <AvatarFallback>
+                  {hostProfile.display_name?.charAt(0)?.toUpperCase() || "H"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm text-muted-foreground">Hosted by</p>
+                <p className="font-medium">{hostProfile.display_name || "Anonymous"}</p>
+              </div>
+            </div>
+          )}
+          
           <DialogTitle className="text-2xl">{experience.title}</DialogTitle>
           <DialogDescription className="space-y-4 pt-4">
             <div className="flex flex-wrap gap-2">
@@ -137,7 +192,9 @@ const ExperienceDetailModal = ({
               {experience.capacity && (
                 <div className="flex items-center gap-3 text-muted-foreground">
                   <Users className="w-5 h-5 text-accent" />
-                  <span>Up to {experience.capacity} people</span>
+                  <span>
+                    <strong>{enrollmentCount}</strong> / {experience.capacity} people joined
+                  </span>
                 </div>
               )}
               {experience.price !== null && experience.price !== undefined && (
@@ -161,6 +218,9 @@ const ExperienceDetailModal = ({
             {loading ? "Loading..." : isEnrolled ? (isPastExperience ? "Experience Completed" : "Leave Experience") : "Join Experience"}
           </Button>
         </div>
+        
+        {/* Comments Section */}
+        <ExperienceComments experienceId={experience.id} />
       </DialogContent>
     </Dialog>
   );
