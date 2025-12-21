@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import ExperienceComments from "./ExperienceComments";
+import { getCategoryImage } from "@/lib/categoryImages";
 
 interface Experience {
   id: string;
@@ -147,7 +148,7 @@ const ExperienceDetailModal = ({
         <DialogHeader>
           <div className="relative h-64 w-full -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-lg">
             <img
-              src={experience.imageUrl || "https://images.unsplash.com/photo-1522071820081-009f0129c71c"}
+              src={experience.imageUrl || getCategoryImage(experience.category)}
               alt={experience.title}
               className="w-full h-full object-cover"
             />
