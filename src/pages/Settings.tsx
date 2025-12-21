@@ -7,7 +7,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, Lock, Moon, Sun, ArrowLeft } from "lucide-react";
+import { LogOut, Lock, Moon, Sun, ArrowLeft, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 
@@ -19,6 +30,7 @@ const Settings = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +93,33 @@ const Settings = () => {
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("No user found");
+      }
+
+      // Delete user's profile (RLS allows users to delete their own profile)
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (profileError) throw profileError;
+
+      // Sign out and redirect
+      await signOut();
+      toast.success("Your account data has been deleted");
+      navigate("/auth");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete account data");
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   return (
@@ -179,6 +218,41 @@ const Settings = () => {
               <Button onClick={handleSignOut} variant="destructive">
                 Sign Out
               </Button>
+            </div>
+          </Card>
+
+          {/* Delete Account */}
+          <Card className="p-6 border-destructive">
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-destructive">
+              <Trash2 className="w-5 h-5" />
+              Delete Account
+            </h3>
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground">
+                Permanently delete your profile data
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={deletingAccount}>
+                    {deletingAccount ? "Deleting..." : "Delete Account"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your
+                      profile data including your display name, avatar, and interests.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAccount}>
+                      Delete Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </Card>
         </div>
