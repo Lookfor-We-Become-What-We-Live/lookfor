@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceDetailModal from "@/components/ExperienceDetailModal";
+import ExperienceParticipants from "@/components/ExperienceParticipants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -415,11 +416,13 @@ const Luggage = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {pastEnrollments.map((enrollment) => (
-                  <ExperienceCard
-                    key={enrollment.id}
-                    {...enrollment.experience}
-                    onClick={() => handleCardClick(enrollment.experience)}
-                  />
+                  <div key={enrollment.id} className="space-y-3">
+                    <ExperienceCard
+                      {...enrollment.experience}
+                      onClick={() => handleCardClick(enrollment.experience)}
+                    />
+                    <ExperienceParticipants experienceId={enrollment.experience.id} />
+                  </div>
                 ))}
               </div>
             )}
