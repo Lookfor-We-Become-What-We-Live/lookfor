@@ -1,0 +1,121 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, Users } from "lucide-react";
+import UserProfileModal from "./UserProfileModal";
+
+interface Participant {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
+interface ExperienceParticipantsProps {
+  experienceId: string;
+}
+
+const ExperienceParticipants = ({ experienceId }: ExperienceParticipantsProps) => {
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetchParticipants();
+  }, [experienceId]);
+
+  const fetchParticipants = async () => {
+    try {
+      // First get all enrollments for this experience
+      const { data: enrollments, error: enrollmentError } = await supabase
+        .from("enrollments")
+        .select("user_id")
+        .eq("experience_id", experienceId)
+        .eq("status", "joined");
+
+      if (enrollmentError) throw enrollmentError;
+
+      if (!enrollments || enrollments.length === 0) {
+        setParticipants([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get profiles for these users
+      const userIds = enrollments.map((e) => e.user_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url")
+        .in("user_id", userIds);
+
+      if (profileError) throw profileError;
+
+      setParticipants(profiles || []);
+    } catch (error) {
+      console.error("Error fetching participants:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleParticipantClick = (userId: string) => {
+    setSelectedUserId(userId);
+    setProfileModalOpen(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Users className="w-4 h-4" />
+        Loading participants...
+      </div>
+    );
+  }
+
+  if (participants.length === 0) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Users className="w-4 h-4" />
+        No participants
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Users className="w-4 h-4" />
+          Participants ({participants.length})
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {participants.map((participant) => (
+            <button
+              key={participant.user_id}
+              onClick={() => handleParticipantClick(participant.user_id)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary hover:bg-secondary/80 transition-colors cursor-pointer"
+            >
+              <Avatar className="w-6 h-6">
+                <AvatarImage src={participant.avatar_url || undefined} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  <User className="w-3 h-3" />
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm">
+                {participant.display_name || "Anonymous"}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <UserProfileModal
+        userId={selectedUserId}
+        open={profileModalOpen}
+        onOpenChange={setProfileModalOpen}
+      />
+    </>
+  );
+};
+
+export default ExperienceParticipants;
