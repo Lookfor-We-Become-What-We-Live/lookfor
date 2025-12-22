@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import ExperienceComments from "./ExperienceComments";
 import { getCategoryImage } from "@/lib/categoryImages";
+import ReportUserDialog from "./ReportUserDialog";
 
 interface Experience {
   id: string;
@@ -155,18 +156,24 @@ const ExperienceDetailModal = ({
           </div>
           
           {/* Host Profile */}
-          {hostProfile && (
-            <div className="flex items-center gap-3 mb-4">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={hostProfile.avatar_url || undefined} />
-                <AvatarFallback>
-                  {hostProfile.display_name?.charAt(0)?.toUpperCase() || "H"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm text-muted-foreground">Hosted by</p>
-                <p className="font-medium">{hostProfile.display_name || "Anonymous"}</p>
+          {hostProfile && experience.hostUserId && (
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={hostProfile.avatar_url || undefined} />
+                  <AvatarFallback>
+                    {hostProfile.display_name?.charAt(0)?.toUpperCase() || "H"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm text-muted-foreground">Hosted by</p>
+                  <p className="font-medium">{hostProfile.display_name || "Anonymous"}</p>
+                </div>
               </div>
+              <ReportUserDialog 
+                reportedUserId={experience.hostUserId} 
+                reportedUserName={hostProfile.display_name || "Anonymous"} 
+              />
             </div>
           )}
           
