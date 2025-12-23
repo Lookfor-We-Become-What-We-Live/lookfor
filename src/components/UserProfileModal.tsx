@@ -59,8 +59,8 @@ const UserProfileModal = ({ userId, open, onOpenChange }: UserProfileModalProps)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>User Profile</DialogTitle>
+        <DialogHeader className="sr-only">
+          <DialogTitle>Profile</DialogTitle>
         </DialogHeader>
         
         {loading ? (
@@ -68,7 +68,7 @@ const UserProfileModal = ({ userId, open, onOpenChange }: UserProfileModalProps)
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : profile ? (
-          <div className="flex flex-col items-center gap-4 py-4">
+          <div className="flex flex-col items-center gap-4 py-6">
             <Avatar className="w-24 h-24">
               <AvatarImage src={profile.avatar_url || undefined} />
               <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
@@ -88,7 +88,7 @@ const UserProfileModal = ({ userId, open, onOpenChange }: UserProfileModalProps)
               </div>
             )}
             
-            <div className="mt-4 pt-4 border-t w-full flex justify-center">
+            <div className="mt-2 w-full flex justify-center">
               <ReportUserDialog
                 reportedUserId={profile.user_id}
                 reportedUserName={displayName}

@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import ExperienceComments from "./ExperienceComments";
 import { getCategoryImage } from "@/lib/categoryImages";
 import ReportUserDialog from "./ReportUserDialog";
+import ExperienceParticipants from "./ExperienceParticipants";
 
 interface Experience {
   id: string;
@@ -216,6 +217,12 @@ const ExperienceDetailModal = ({
             </div>
           </DialogDescription>
         </DialogHeader>
+        
+        {/* Participants Section */}
+        <div className="pt-4 border-t">
+          <ExperienceParticipants experienceId={experience.id} />
+        </div>
+        
         <div className="flex gap-3 pt-4">
           <Button
             onClick={handleEnroll}
