@@ -6,26 +6,16 @@ import Navigation from "@/components/Navigation";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceDetailModal from "@/components/ExperienceDetailModal";
 import ExperienceParticipants from "@/components/ExperienceParticipants";
+import DeleteExperienceDialog from "@/components/DeleteExperienceDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Settings as SettingsIcon, Camera, Trash2 } from "lucide-react";
+import { User, Settings as SettingsIcon, Camera } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 interface Experience {
   id: string;
@@ -193,23 +183,6 @@ const Luggage = () => {
     }
   };
 
-  const handleDeleteExperience = async (experienceId: string) => {
-    try {
-      const { error } = await supabase
-        .from("experiences")
-        .delete()
-        .eq("id", experienceId);
-
-      if (error) throw error;
-
-      toast.success("Experience deleted successfully");
-      fetchHostedExperiences();
-    } catch (error: any) {
-      console.error("Error deleting experience:", error);
-      toast.error(error.message || "Failed to delete experience");
-    }
-  };
-
   const handleCardClick = (experience: Experience) => {
     setSelectedExperience(experience);
     setModalOpen(true);
@@ -351,34 +324,12 @@ const Luggage = () => {
                         onClick={() => handleCardClick(experience)}
                       />
                       {isFutureExperience && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Experience</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete "{experience.title}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteExperience(experience.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <DeleteExperienceDialog
+                          experienceId={experience.id}
+                          experienceTitle={experience.title}
+                          experienceDateTime={experience.dateTimeStart}
+                          onDeleted={fetchHostedExperiences}
+                        />
                       )}
                     </div>
                   );

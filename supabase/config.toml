@@ -1,1 +1,4 @@
 project_id = "lrmmornucbodnwavyaeh"
+
+[functions.notify-experience-cancelled]
+verify_jwt = true
