@@ -100,16 +100,37 @@ const ExperienceDetailModal = ({
     setLoading(true);
     try {
       if (isEnrolled) {
-        // Cancel enrollment
+        // Cancel enrollment and set left_at timestamp
         const { error } = await supabase
           .from("enrollments")
-          .update({ status: "cancelled" })
+          .update({ status: "cancelled", left_at: new Date().toISOString() })
           .eq("user_id", user.id)
           .eq("experience_id", experience.id);
 
         if (error) throw error;
         toast.success("Left the experience");
       } else {
+        // Check if there's an existing enrollment with cooldown
+        const { data: existingEnrollment } = await supabase
+          .from("enrollments")
+          .select("left_at")
+          .eq("user_id", user.id)
+          .eq("experience_id", experience.id)
+          .single();
+
+        if (existingEnrollment?.left_at) {
+          const leftAt = new Date(existingEnrollment.left_at);
+          const cooldownEnd = new Date(leftAt.getTime() + 15 * 60 * 1000); // 15 minutes
+          const now = new Date();
+          
+          if (now < cooldownEnd) {
+            const remainingMinutes = Math.ceil((cooldownEnd.getTime() - now.getTime()) / 60000);
+            toast.error(`You can rejoin this experience in ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`);
+            setLoading(false);
+            return;
+          }
+        }
+
         // Join experience
         const { error } = await supabase.from("enrollments").insert({
           user_id: user.id,
@@ -122,7 +143,7 @@ const ExperienceDetailModal = ({
           if (error.code === "23505") {
             const { error: updateError } = await supabase
               .from("enrollments")
-              .update({ status: "joined" })
+              .update({ status: "joined", left_at: null })
               .eq("user_id", user.id)
               .eq("experience_id", experience.id);
 
