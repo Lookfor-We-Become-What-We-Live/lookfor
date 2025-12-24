@@ -79,8 +79,8 @@ const CreateExperienceModal = ({
         location_address: formData.locationAddress,
         location_lat: parseFloat(formData.locationLat),
         location_lng: parseFloat(formData.locationLng),
-        price: formData.price ? parseFloat(formData.price) : null,
-        capacity: formData.capacity ? parseInt(formData.capacity) : null,
+        price: formData.price ? Math.max(0, parseFloat(formData.price)) : null,
+        capacity: formData.capacity ? Math.max(0, parseInt(formData.capacity.split("-").pop()!.trim())) : null,
         image_url: formData.imageUrl || null,
         host_user_id: user.id,
       });
@@ -216,6 +216,7 @@ const CreateExperienceModal = ({
                 id="price"
                 type="number"
                 step="0.01"
+                min="0"
                 value={formData.price}
                 onChange={(e) => handleChange("price", e.target.value)}
                 placeholder="0.00"
@@ -228,10 +229,16 @@ const CreateExperienceModal = ({
               </Label>
               <Input
                 id="capacity"
-                type="number"
+                type="text"
                 value={formData.capacity}
-                onChange={(e) => handleChange("capacity", e.target.value)}
-                placeholder="e.g., 5"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty, single number, or range format "X - Y"
+                  if (value === "" || /^[0-9]+(\s*-\s*[0-9]+)?$/.test(value)) {
+                    handleChange("capacity", value);
+                  }
+                }}
+                placeholder="e.g., 5 or 3 - 5"
               />
             </div>
           </div>
