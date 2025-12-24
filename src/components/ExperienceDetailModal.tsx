@@ -90,6 +90,7 @@ const ExperienceDetailModal = ({
   if (!experience) return null;
 
   const isPastExperience = new Date(experience.dateTimeStart) < new Date();
+  const isHost = user?.id === experience.hostUserId;
 
   const handleEnroll = async () => {
     if (!user) {
@@ -244,16 +245,18 @@ const ExperienceDetailModal = ({
           <ExperienceParticipants experienceId={experience.id} />
         </div>
         
-        <div className="flex gap-3 pt-4">
-          <Button
-            onClick={handleEnroll}
-            disabled={loading || (isEnrolled && isPastExperience)}
-            className="flex-1"
-            variant={isEnrolled ? "outline" : "default"}
-          >
-            {loading ? "Loading..." : isEnrolled ? (isPastExperience ? "Experience Completed" : "Leave Experience") : "Join Experience"}
-          </Button>
-        </div>
+        {!isHost && (
+          <div className="flex gap-3 pt-4">
+            <Button
+              onClick={handleEnroll}
+              disabled={loading || (isEnrolled && isPastExperience)}
+              className="flex-1"
+              variant={isEnrolled ? "outline" : "default"}
+            >
+              {loading ? "Loading..." : isEnrolled ? (isPastExperience ? "Experience Completed" : "Leave Experience") : "Join Experience"}
+            </Button>
+          </div>
+        )}
         
         {/* Comments Section */}
         <ExperienceComments experienceId={experience.id} />
