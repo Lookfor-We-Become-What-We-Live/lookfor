@@ -233,8 +233,8 @@ const CreateExperienceModal = ({
                 value={formData.capacity}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Allow empty, single number, or range format "X - Y"
-                  if (value === "" || /^[0-9]+(\s*-\s*[0-9]+)?$/.test(value)) {
+                  // Allow typing numbers, spaces, and "-" for range format "X - Y"
+                  if (value === "" || /^[0-9]+[\s\-]*[0-9]*$/.test(value)) {
                     handleChange("capacity", value);
                   }
                 }}
