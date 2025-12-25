@@ -292,11 +292,8 @@ const Luggage = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="hosted" className="w-full">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
-            <TabsTrigger value="hosted">
-              Hosted ({hostedExperiences.length})
-            </TabsTrigger>
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="grid w-full max-w-lg grid-cols-2">
             <TabsTrigger value="active">
               Joined ({activeEnrollments.length})
             </TabsTrigger>
@@ -304,39 +301,6 @@ const Luggage = () => {
               Past ({pastEnrollments.length})
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="hosted" className="mt-6">
-            {hostedExperiences.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No hosted experiences yet.</p>
-                <p className="text-sm mt-2">
-                  Create your first experience to share with others!
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {hostedExperiences.map((experience) => {
-                  const isFutureExperience = new Date(experience.dateTimeStart) > new Date();
-                  return (
-                    <div key={experience.id} className="relative group">
-                      <ExperienceCard
-                        {...experience}
-                        onClick={() => handleCardClick(experience)}
-                      />
-                      {isFutureExperience && (
-                        <DeleteExperienceDialog
-                          experienceId={experience.id}
-                          experienceTitle={experience.title}
-                          experienceDateTime={experience.dateTimeStart}
-                          onDeleted={fetchHostedExperiences}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
 
           <TabsContent value="active" className="mt-6">
             {activeEnrollments.length === 0 ? (
