@@ -28,8 +28,8 @@ const INTEREST_OPTIONS = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -59,7 +59,19 @@ const Onboarding = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+
+    if (authLoading) {
+      toast.error("Please wait a moment—finishing sign-in.");
+      return;
+    }
+
+    if (!user) {
+      toast.error(
+        "Please confirm your email (if required) and sign in to finish setup."
+      );
+      navigate("/auth");
+      return;
+    }
 
     if (!displayName.trim()) {
       toast.error("Please enter your full name");
@@ -71,7 +83,7 @@ const Onboarding = () => {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
       let avatarUrl = null;
 
@@ -79,7 +91,7 @@ const Onboarding = () => {
       if (avatarFile) {
         const fileExt = avatarFile.name.split(".").pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase.storage
           .from("avatars")
           .upload(fileName, avatarFile);
@@ -95,12 +107,15 @@ const Onboarding = () => {
 
       const { error } = await supabase
         .from("profiles")
-        .upsert({
-          user_id: user.id,
-          display_name: displayName,
-          interests: selectedInterests,
-          avatar_url: avatarUrl,
-        }, { onConflict: 'user_id' });
+        .upsert(
+          {
+            user_id: user.id,
+            display_name: displayName,
+            interests: selectedInterests,
+            avatar_url: avatarUrl,
+          },
+          { onConflict: "user_id" }
+        );
 
       if (error) throw error;
 
@@ -109,9 +124,10 @@ const Onboarding = () => {
     } catch (error: any) {
       toast.error(error.message || "Failed to update profile");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
@@ -195,8 +211,12 @@ const Onboarding = () => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Setting up..." : "Complete Setup"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={submitting || authLoading || !user}
+          >
+            {submitting ? "Setting up..." : authLoading ? "Loading..." : "Complete Setup"}
           </Button>
         </form>
       </Card>
