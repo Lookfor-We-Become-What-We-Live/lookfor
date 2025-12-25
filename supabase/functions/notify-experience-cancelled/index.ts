@@ -25,15 +25,81 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Get Authorization header from request
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: No authorization header" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    // Create client with user's auth context to verify identity
+    const supabaseUserClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Verify user is authenticated
+    const { data: { user }, error: authError } = await supabaseUserClient.auth.getUser();
+    if (authError || !user) {
+      console.error("Auth error:", authError?.message || "No user found");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: Invalid authentication" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    console.log(`Authenticated user: ${user.id}`);
+
     const { experienceId, experienceTitle, reason, hostName }: CancellationRequest = await req.json();
     
     console.log(`Processing cancellation for experience: ${experienceId}`);
     console.log(`Title: ${experienceTitle}, Reason: ${reason}, Host: ${hostName}`);
 
-    // Create Supabase client with service role
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // Create Supabase client with service role for data operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify user owns the experience
+    const { data: experience, error: expError } = await supabase
+      .from("experiences")
+      .select("host_user_id")
+      .eq("id", experienceId)
+      .single();
+
+    if (expError || !experience) {
+      console.error("Experience not found:", expError?.message);
+      return new Response(
+        JSON.stringify({ error: "Experience not found" }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    if (experience.host_user_id !== user.id) {
+      console.error(`User ${user.id} is not the host of experience ${experienceId}`);
+      return new Response(
+        JSON.stringify({ error: "Forbidden: You are not the host of this experience" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    console.log("Host verification successful");
 
     // Get all enrolled users for this experience
     const { data: enrollments, error: enrollmentError } = await supabase
