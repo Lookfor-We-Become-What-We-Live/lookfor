@@ -95,12 +95,12 @@ const Onboarding = () => {
 
       const { error } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          user_id: user.id,
           display_name: displayName,
           interests: selectedInterests,
           avatar_url: avatarUrl,
-        })
-        .eq("user_id", user.id);
+        }, { onConflict: 'user_id' });
 
       if (error) throw error;
 
