@@ -41,9 +41,6 @@ const Index = () => {
   const [category, setCategory] = useState("All Categories");
   const [priceFilter, setPriceFilter] = useState("all");
   const [enrolledIds, setEnrolledIds] = useState<Set<string>>(new Set());
-  const [mapApiKey, setMapApiKey] = useState(
-    localStorage.getItem("mapbox_api_key") || ""
-  );
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -77,12 +74,6 @@ const Index = () => {
   useEffect(() => {
     applyFilters();
   }, [experiences, searchQuery, category, priceFilter, userLocation]);
-
-  useEffect(() => {
-    if (mapApiKey) {
-      localStorage.setItem("mapbox_api_key", mapApiKey);
-    }
-  }, [mapApiKey]);
 
   const fetchExperiences = async () => {
     try {
@@ -256,8 +247,6 @@ const Index = () => {
             experiences={filteredExperiences}
             selectedExperienceId={selectedExperienceId}
             onMarkerClick={handleMarkerClick}
-            apiKey={mapApiKey}
-            onApiKeyChange={setMapApiKey}
           />
         </div>
 

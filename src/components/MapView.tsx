@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Experience {
   id: string;
@@ -16,21 +17,47 @@ interface MapViewProps {
   experiences: Experience[];
   selectedExperienceId: string | null;
   onMarkerClick: (experienceId: string) => void;
-  apiKey: string;
-  onApiKeyChange: (key: string) => void;
 }
 
 const MapView = ({
   experiences,
   selectedExperienceId,
   onMarkerClick,
-  apiKey,
-  onApiKeyChange,
 }: MapViewProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
-  const [showKeyInput, setShowKeyInput] = useState(!apiKey);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch Mapbox token from backend
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("get-mapbox-token");
+        
+        if (error) {
+          console.error("Error fetching Mapbox token:", error);
+          setError("Failed to load map configuration");
+          return;
+        }
+
+        if (data?.token) {
+          setApiKey(data.token);
+        } else {
+          setError("Map token not configured");
+        }
+      } catch (err) {
+        console.error("Error fetching Mapbox token:", err);
+        setError("Failed to load map configuration");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchToken();
+  }, []);
 
   useEffect(() => {
     if (!mapContainer.current || !apiKey) return;
@@ -46,11 +73,9 @@ const MapView = ({
       });
 
       map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
-
-      setShowKeyInput(false);
-    } catch (error) {
-      console.error("Error initializing map:", error);
-      setShowKeyInput(true);
+    } catch (err) {
+      console.error("Error initializing map:", err);
+      setError("Failed to initialize map");
     }
 
     return () => {
@@ -112,30 +137,21 @@ const MapView = ({
     }
   }, [selectedExperienceId, experiences]);
 
-  if (showKeyInput) {
+  if (loading) {
+    return (
+      <Card className="w-full h-full flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </Card>
+    );
+  }
+
+  if (error) {
     return (
       <Card className="w-full h-full flex flex-col items-center justify-center p-6 space-y-4">
         <div className="text-center space-y-2">
-          <h3 className="font-semibold text-lg">Mapbox API Key Required</h3>
-          <p className="text-sm text-muted-foreground">
-            Get your free public token from{" "}
-            <a
-              href="https://account.mapbox.com/access-tokens/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              mapbox.com
-            </a>
-          </p>
+          <h3 className="font-semibold text-lg">Map Unavailable</h3>
+          <p className="text-sm text-muted-foreground">{error}</p>
         </div>
-        <Input
-          type="text"
-          placeholder="pk.eyJ1..."
-          value={apiKey}
-          onChange={(e) => onApiKeyChange(e.target.value)}
-          className="max-w-md"
-        />
       </Card>
     );
   }

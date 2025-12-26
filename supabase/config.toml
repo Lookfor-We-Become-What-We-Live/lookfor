@@ -2,3 +2,6 @@ project_id = "lrmmornucbodnwavyaeh"
 
 [functions.notify-experience-cancelled]
 verify_jwt = true
+
+[functions.get-mapbox-token]
+verify_jwt = false
