@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import lookforLogo from "@/assets/lookfor-logo.jpg";
 import { supabase } from "@/integrations/supabase/client";
 
-type AuthStep = "credentials" | "verify";
+type AuthStep = "credentials" | "verify" | "forgot-password" | "reset-sent";
 type AuthMethod = "email" | "phone";
 
 const Auth = () => {
@@ -32,6 +32,23 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const sendAuthEmail = async (emailAddress: string, type: "confirmation" | "reset", url: string) => {
+    const { data, error } = await supabase.functions.invoke("send-auth-email", {
+      body: {
+        email: emailAddress,
+        type,
+        ...(type === "confirmation" ? { confirmationUrl: url } : { resetUrl: url }),
+      },
+    });
+
+    if (error) {
+      console.error("Error sending email:", error);
+      throw error;
+    }
+
+    return data;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -39,7 +56,7 @@ const Auth = () => {
     try {
       if (authMethod === "email") {
         const redirectUrl = `${window.location.origin}/onboarding`;
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -49,8 +66,18 @@ const Auth = () => {
 
         if (error) {
           toast.error(error.message);
-        } else {
-          toast.success("Check your email for a confirmation link!");
+        } else if (data.user) {
+          // Try to send custom email via Resend
+          try {
+            // Get the confirmation link from Supabase
+            const confirmUrl = `${window.location.origin}/onboarding`;
+            await sendAuthEmail(email, "confirmation", confirmUrl);
+            toast.success("Check your email for a confirmation link!");
+          } catch (emailError) {
+            // Fall back to Supabase's built-in email
+            console.log("Using built-in email confirmation");
+            toast.success("Check your email for a confirmation link!");
+          }
           setStep("verify");
         }
       } else {
@@ -137,6 +164,41 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const resetUrl = `${window.location.origin}/auth?reset=true`;
+      
+      // Send password reset via Supabase (this generates the secure token)
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: resetUrl,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        // Try to send custom email via Resend
+        try {
+          await sendAuthEmail(email, "reset", resetUrl);
+        } catch (emailError) {
+          console.log("Using built-in password reset email");
+        }
+        toast.success("Check your email for a password reset link!");
+        setStep("reset-sent");
+      }
+    } catch (error: any) {
+      toast.error("Failed to send reset email. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleResendCode = async () => {
     setLoading(true);
     try {
@@ -159,6 +221,13 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
+          // Try to send custom email via Resend
+          try {
+            const confirmUrl = `${window.location.origin}/onboarding`;
+            await sendAuthEmail(email, "confirmation", confirmUrl);
+          } catch (emailError) {
+            console.log("Using built-in confirmation email");
+          }
           toast.success("Confirmation email resent!");
         }
       }
@@ -168,6 +237,95 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Password reset sent confirmation
+  if (step === "reset-sent") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-2 text-center">
+            <div className="flex justify-center mb-4">
+              <img
+                src={lookforLogo}
+                alt="Lookfor"
+                className="w-20 h-20 rounded-2xl object-cover"
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold">Check Your Email</CardTitle>
+            <CardDescription>
+              We've sent a password reset link to <strong>{email}</strong>. 
+              Click the link to reset your password.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setStep("credentials");
+                setIsLogin(true);
+              }}
+            >
+              Back to Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Forgot password form
+  if (step === "forgot-password") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-2 text-center">
+            <div className="flex justify-center mb-4">
+              <img
+                src={lookforLogo}
+                alt="Lookfor"
+                className="w-20 h-20 rounded-2xl object-cover"
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+            <CardDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </form>
+            <div className="mt-4">
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setStep("credentials");
+                  setIsLogin(true);
+                }}
+              >
+                Back to Sign In
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Email verification step (waiting for link click)
   if (step === "verify" && authMethod === "email") {
@@ -357,6 +515,18 @@ const Auth = () => {
               {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
           </form>
+
+          {isLogin && authMethod === "email" && (
+            <div className="mt-3 text-center">
+              <button
+                type="button"
+                onClick={() => setStep("forgot-password")}
+                className="text-sm text-muted-foreground hover:text-primary hover:underline"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
 
           <div className="mt-4 text-center text-sm">
             <button
