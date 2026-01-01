@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, LocateFixed } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Experience {
   id: string;
@@ -156,7 +158,42 @@ const MapView = ({
     );
   }
 
-  return <div ref={mapContainer} className="w-full h-full rounded-lg" />;
+  const handleMyLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        map.current?.flyTo({
+          center: [longitude, latitude],
+          zoom: 14,
+          duration: 1000,
+        });
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        toast.error("Unable to get your location");
+      }
+    );
+  };
+
+  return (
+    <div className="relative w-full h-full">
+      <div ref={mapContainer} className="w-full h-full rounded-lg" />
+      <Button
+        variant="secondary"
+        size="icon"
+        className="absolute bottom-4 right-4 shadow-lg"
+        onClick={handleMyLocation}
+        title="My Location"
+      >
+        <LocateFixed className="h-5 w-5" />
+      </Button>
+    </div>
+  );
 };
 
 export default MapView;

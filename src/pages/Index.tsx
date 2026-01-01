@@ -242,7 +242,7 @@ const Index = () => {
       {/* Unified Map + Feed View */}
       <div className="flex flex-col">
         {/* Map Section */}
-        <div style={{ height: "70vh", minHeight: "500px" }} className="w-full">
+        <div style={{ height: "59.5vh", minHeight: "425px" }} className="w-full">
           <MapView
             experiences={filteredExperiences}
             selectedExperienceId={selectedExperienceId}
