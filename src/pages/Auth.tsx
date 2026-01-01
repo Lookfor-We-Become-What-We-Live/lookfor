@@ -5,16 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import lookforLogo from "@/assets/lookfor-logo.jpg";
+import { supabase } from "@/integrations/supabase/client";
+
+type AuthStep = "credentials" | "verify";
+type AuthMethod = "email" | "phone";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [step, setStep] = useState<AuthStep>("credentials");
+  const [authMethod, setAuthMethod] = useState<AuthMethod>("email");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,31 +32,40 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await signIn(email, password);
+      if (authMethod === "email") {
+        const redirectUrl = `${window.location.origin}/onboarding`;
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+          },
+        });
+
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success("Welcome back!");
-          navigate("/");
+          toast.success("Check your email for a confirmation link!");
+          setStep("verify");
         }
       } else {
-        if (!name.trim()) {
-          toast.error("Please enter your name");
-          setLoading(false);
-          return;
-        }
-        const { error } = await signUp(email, password, name);
+        // Phone sign-up with OTP
+        const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
+        const { error } = await supabase.auth.signUp({
+          phone: formattedPhone,
+          password,
+        });
+
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success("Account created! Welcome aboard!");
-          navigate("/onboarding");
+          toast.success("Check your phone for a verification code!");
+          setStep("verify");
         }
       }
     } catch (error: any) {
@@ -56,6 +74,213 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otp.length !== 6) {
+      toast.error("Please enter the complete 6-digit code");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
+      const { error } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token: otp,
+        type: "sms",
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Phone verified! Let's complete your profile.");
+        navigate("/onboarding");
+      }
+    } catch (error: any) {
+      toast.error("Verification failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (authMethod === "email") {
+        const { error } = await signIn(email, password);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success("Welcome back!");
+          navigate("/");
+        }
+      } else {
+        const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
+        const { error } = await supabase.auth.signInWithPassword({
+          phone: formattedPhone,
+          password,
+        });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success("Welcome back!");
+          navigate("/");
+        }
+      }
+    } catch (error: any) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setLoading(true);
+    try {
+      if (authMethod === "phone") {
+        const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
+        const { error } = await supabase.auth.resend({
+          type: "sms",
+          phone: formattedPhone,
+        });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success("Verification code resent!");
+        }
+      } else {
+        const { error } = await supabase.auth.resend({
+          type: "signup",
+          email,
+        });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success("Confirmation email resent!");
+        }
+      }
+    } catch (error: any) {
+      toast.error("Failed to resend code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Email verification step (waiting for link click)
+  if (step === "verify" && authMethod === "email") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-2 text-center">
+            <div className="flex justify-center mb-4">
+              <img
+                src={lookforLogo}
+                alt="Lookfor"
+                className="w-20 h-20 rounded-2xl object-cover"
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold">Check Your Email</CardTitle>
+            <CardDescription>
+              We've sent a confirmation link to <strong>{email}</strong>. 
+              Click the link to verify your account and continue to profile setup.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleResendCode}
+              disabled={loading}
+            >
+              {loading ? "Sending..." : "Resend confirmation email"}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={() => {
+                setStep("credentials");
+                setEmail("");
+                setPassword("");
+              }}
+            >
+              Use a different email
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Phone OTP verification step
+  if (step === "verify" && authMethod === "phone") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-2 text-center">
+            <div className="flex justify-center mb-4">
+              <img
+                src={lookforLogo}
+                alt="Lookfor"
+                className="w-20 h-20 rounded-2xl object-cover"
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold">Verify Your Phone</CardTitle>
+            <CardDescription>
+              Enter the 6-digit code sent to <strong>{phone}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleVerifyOtp} className="space-y-6">
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={otp}
+                  onChange={(value) => setOtp(value)}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <Button type="submit" className="w-full" disabled={loading || otp.length !== 6}>
+                {loading ? "Verifying..." : "Verify & Continue"}
+              </Button>
+            </form>
+            <div className="mt-4 space-y-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleResendCode}
+                disabled={loading}
+              >
+                {loading ? "Sending..." : "Resend code"}
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setStep("credentials");
+                  setPhone("");
+                  setPassword("");
+                  setOtp("");
+                }}
+              >
+                Use a different phone number
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
@@ -78,31 +303,43 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+          <Tabs value={authMethod} onValueChange={(v) => setAuthMethod(v as AuthMethod)} className="mb-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="email">Email</TabsTrigger>
+              <TabsTrigger value="phone">Phone</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-4">
+            {authMethod === "email" ? (
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="name"
-                  type="text"
-                  placeholder="Your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={!isLogin}
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+1234567890"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Include country code (e.g., +1 for US)
+                </p>
+              </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -115,10 +352,12 @@ const Auth = () => {
                 minLength={6}
               />
             </div>
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
           </form>
+
           <div className="mt-4 text-center text-sm">
             <button
               type="button"
