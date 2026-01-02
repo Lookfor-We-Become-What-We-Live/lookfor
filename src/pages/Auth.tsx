@@ -32,22 +32,6 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
-  const sendAuthEmail = async (emailAddress: string, type: "confirmation" | "reset", url: string) => {
-    const { data, error } = await supabase.functions.invoke("send-auth-email", {
-      body: {
-        email: emailAddress,
-        type,
-        ...(type === "confirmation" ? { confirmationUrl: url } : { resetUrl: url }),
-      },
-    });
-
-    if (error) {
-      console.error("Error sending email:", error);
-      throw error;
-    }
-
-    return data;
-  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,17 +51,7 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else if (data.user) {
-          // Try to send custom email via Resend
-          try {
-            // Get the confirmation link from Supabase
-            const confirmUrl = `${window.location.origin}/onboarding`;
-            await sendAuthEmail(email, "confirmation", confirmUrl);
-            toast.success("Check your email for a confirmation link!");
-          } catch (emailError) {
-            // Fall back to Supabase's built-in email
-            console.log("Using built-in email confirmation");
-            toast.success("Check your email for a confirmation link!");
-          }
+          toast.success("Check your email for a confirmation link!");
           setStep("verify");
         }
       } else {
@@ -183,12 +157,6 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        // Try to send custom email via Resend
-        try {
-          await sendAuthEmail(email, "reset", resetUrl);
-        } catch (emailError) {
-          console.log("Using built-in password reset email");
-        }
         toast.success("Check your email for a password reset link!");
         setStep("reset-sent");
       }
@@ -221,13 +189,6 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          // Try to send custom email via Resend
-          try {
-            const confirmUrl = `${window.location.origin}/onboarding`;
-            await sendAuthEmail(email, "confirmation", confirmUrl);
-          } catch (emailError) {
-            console.log("Using built-in confirmation email");
-          }
           toast.success("Confirmation email resent!");
         }
       }
