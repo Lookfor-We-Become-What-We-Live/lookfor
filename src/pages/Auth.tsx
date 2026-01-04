@@ -38,7 +38,7 @@ const Auth = () => {
   const getErrorMessage = (error: any): string => {
     const msg = error?.message?.toLowerCase() || "";
     if (msg.includes("password") || msg.includes("weak") || msg.includes("short") || msg.includes("character")) {
-      return "Password must be at least 7 chars long and contain lowercase, uppercase and 1 special char.";
+      return "Password must be at least 7 characters long and contain lowercase, uppercase and at least 1 special character.";
     }
     return "An error occurred. Please try again later.";
   };
