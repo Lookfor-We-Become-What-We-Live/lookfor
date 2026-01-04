@@ -35,6 +35,14 @@ const Auth = () => {
   }, [user, navigate]);
 
 
+  const getErrorMessage = (error: any): string => {
+    const msg = error?.message?.toLowerCase() || "";
+    if (msg.includes("password") || msg.includes("weak") || msg.includes("short") || msg.includes("character")) {
+      return "Password must be at least 7 chars long and contain lowercase, uppercase and 1 special char.";
+    }
+    return "An error occurred. Please try again later.";
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -51,7 +59,7 @@ const Auth = () => {
         });
 
         if (error) {
-          toast.error(error.message);
+          toast.error(getErrorMessage(error));
         } else if (data.user) {
           toast.success("Check your email for a confirmation link!");
           setStep("verify");
@@ -65,14 +73,14 @@ const Auth = () => {
         });
 
         if (error) {
-          toast.error(error.message);
+          toast.error(getErrorMessage(error));
         } else {
           toast.success("Check your phone for a verification code!");
           setStep("verify");
         }
       }
     } catch (error: any) {
-      toast.error("Something went wrong. Please try again.");
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -95,13 +103,13 @@ const Auth = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error("An error occurred. Please try again later.");
       } else {
         toast.success("Phone verified! Let's complete your profile.");
         navigate("/onboarding");
       }
     } catch (error: any) {
-      toast.error("Verification failed. Please try again.");
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -115,7 +123,7 @@ const Auth = () => {
       if (authMethod === "email") {
         const { error } = await signIn(email, password);
         if (error) {
-          toast.error(error.message);
+          toast.error(getErrorMessage(error));
         } else {
           toast.success("Welcome back!");
           navigate("/");
@@ -127,14 +135,14 @@ const Auth = () => {
           password,
         });
         if (error) {
-          toast.error(error.message);
+          toast.error(getErrorMessage(error));
         } else {
           toast.success("Welcome back!");
           navigate("/");
         }
       }
     } catch (error: any) {
-      toast.error("Something went wrong. Please try again.");
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -157,13 +165,13 @@ const Auth = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error("An error occurred. Please try again later.");
       } else {
         toast.success("Check your email for a password reset link!");
         setStep("reset-sent");
       }
     } catch (error: any) {
-      toast.error("Failed to send reset email. Please try again.");
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -179,7 +187,7 @@ const Auth = () => {
           phone: formattedPhone,
         });
         if (error) {
-          toast.error(error.message);
+          toast.error("An error occurred. Please try again later.");
         } else {
           toast.success("Verification code resent!");
         }
@@ -189,13 +197,13 @@ const Auth = () => {
           email,
         });
         if (error) {
-          toast.error(error.message);
+          toast.error("An error occurred. Please try again later.");
         } else {
           toast.success("Confirmation email resent!");
         }
       }
     } catch (error: any) {
-      toast.error("Failed to resend code.");
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
