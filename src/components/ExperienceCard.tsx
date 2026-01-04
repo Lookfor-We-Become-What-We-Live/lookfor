@@ -17,6 +17,7 @@ interface ExperienceCardProps {
   capacity?: number;
   onClick: () => void;
   isSelected?: boolean;
+  isJoined?: boolean;
 }
 
 const ExperienceCard = ({
@@ -30,6 +31,7 @@ const ExperienceCard = ({
   capacity,
   onClick,
   isSelected,
+  isJoined,
 }: ExperienceCardProps) => {
   return (
     <Card
@@ -44,10 +46,15 @@ const ExperienceCard = ({
           alt={title}
           className="w-full h-full object-cover transition-transform hover:scale-105"
         />
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 flex gap-2">
           <Badge className="bg-white/90 dark:bg-slate-700 text-foreground dark:text-white hover:bg-white dark:hover:bg-slate-600">
             {category}
           </Badge>
+          {isJoined && (
+            <Badge className="bg-green-500 text-white hover:bg-green-600">
+              Joined
+            </Badge>
+          )}
         </div>
         {price !== null && price !== undefined && (
           <div className="absolute top-3 right-3">

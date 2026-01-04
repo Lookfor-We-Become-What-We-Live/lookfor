@@ -20,7 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, DollarSign, Users, Image } from "lucide-react";
+import { Calendar, DollarSign, Users } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import GooglePlacesAutocomplete from "./GooglePlacesAutocomplete";
 
 interface CreateExperienceModalProps {
@@ -47,6 +48,7 @@ const CreateExperienceModal = ({
 }: CreateExperienceModalProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [currency, setCurrency] = useState("USD");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -60,6 +62,15 @@ const CreateExperienceModal = ({
     capacity: "",
     imageUrl: "",
   });
+
+  const currencies = [
+    { code: "USD", symbol: "$" },
+    { code: "EUR", symbol: "€" },
+    { code: "GBP", symbol: "£" },
+    { code: "JPY", symbol: "¥" },
+    { code: "CAD", symbol: "C$" },
+    { code: "AUD", symbol: "A$" },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,15 +223,45 @@ const CreateExperienceModal = ({
                 <DollarSign className="w-4 h-4 text-accent" />
                 Price (leave empty for free)
               </Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.price}
-                onChange={(e) => handleChange("price", e.target.value)}
-                placeholder="0.00"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="price"
+                  type="text"
+                  value={formData.price}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow numbers, spaces, and "-" for range format "10 - 15"
+                    if (value === "" || /^[0-9]+(\.[0-9]{0,2})?(\s*-\s*[0-9]*(\.[0-9]{0,2})?)?$/.test(value)) {
+                      handleChange("price", value);
+                    }
+                  }}
+                  placeholder="e.g., 10 or 10 - 15"
+                  className="flex-1"
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" size="icon" className="shrink-0">
+                      {currencies.find(c => c.code === currency)?.symbol || "$"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-32 p-1">
+                    <div className="flex flex-col">
+                      {currencies.map((c) => (
+                        <Button
+                          key={c.code}
+                          type="button"
+                          variant={currency === c.code ? "secondary" : "ghost"}
+                          size="sm"
+                          className="justify-start"
+                          onClick={() => setCurrency(c.code)}
+                        >
+                          {c.symbol} {c.code}
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="capacity" className="flex items-center gap-2">

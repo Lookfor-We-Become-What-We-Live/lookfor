@@ -270,6 +270,7 @@ const Index = () => {
                       {...experience}
                       onClick={() => handleCardClick(experience)}
                       isSelected={selectedExperienceId === experience.id}
+                      isJoined={enrolledIds.has(experience.id)}
                     />
                   </div>
                 ))}
