@@ -1,11 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceDetailModal from "@/components/ExperienceDetailModal";
-import SearchBar from "@/components/SearchBar";
 import { Loader2 } from "lucide-react";
 
 interface Experience {
@@ -32,9 +31,6 @@ const Explore = () => {
   const [loading, setLoading] = useState(true);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [category, setCategory] = useState("All Categories");
-  const [priceFilter, setPriceFilter] = useState("all");
   const [enrolledIds, setEnrolledIds] = useState<Set<string>>(new Set());
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -66,7 +62,7 @@ const Explore = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [experiences, searchQuery, category, priceFilter, userLocation]);
+  }, [experiences, userLocation]);
 
   const fetchExperiences = async () => {
     try {
@@ -138,40 +134,20 @@ const Explore = () => {
   const applyFilters = () => {
     let filtered = [...experiences];
 
+    // Sort by proximity if user location is available
     if (userLocation) {
-      const nearbyExperiences = filtered.filter((exp) => {
-        const distance = calculateDistance(
-          userLocation.lat,
-          userLocation.lng,
-          exp.locationLat,
-          exp.locationLng
-        );
-        return distance <= 20;
-      });
-      if (nearbyExperiences.length > 0) {
-        filtered = nearbyExperiences;
-      }
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (exp) =>
-          exp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          exp.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          exp.tags.some((tag) =>
-            tag.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-      );
-    }
-
-    if (category !== "All Categories") {
-      filtered = filtered.filter((exp) => exp.category === category);
-    }
-
-    if (priceFilter === "free") {
-      filtered = filtered.filter((exp) => !exp.price || exp.price === 0);
-    } else if (priceFilter === "paid") {
-      filtered = filtered.filter((exp) => exp.price && exp.price > 0);
+      filtered = filtered
+        .map((exp) => ({
+          ...exp,
+          distance: calculateDistance(
+            userLocation.lat,
+            userLocation.lng,
+            exp.locationLat,
+            exp.locationLng
+          ),
+        }))
+        .sort((a, b) => a.distance - b.distance)
+        .map(({ distance, ...exp }) => exp);
     }
 
     setFilteredExperiences(filtered);
@@ -197,36 +173,21 @@ const Explore = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background pb-20">
-      <div className="container py-4 space-y-4">
+      <div className="container py-4">
         <h1 className="text-2xl font-bold">Explore</h1>
-        <SearchBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          category={category}
-          onCategoryChange={setCategory}
-          priceFilter={priceFilter}
-          onPriceFilterChange={setPriceFilter}
-        />
       </div>
 
       <div className="container py-4 flex-1">
-        {filteredExperiences.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>No experiences found.</p>
-            <p className="text-sm mt-2">Try adjusting your filters.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredExperiences.map((experience) => (
-              <ExperienceCard
-                key={experience.id}
-                {...experience}
-                onClick={() => handleCardClick(experience)}
-                isJoined={enrolledIds.has(experience.id)}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredExperiences.map((experience) => (
+            <ExperienceCard
+              key={experience.id}
+              {...experience}
+              onClick={() => handleCardClick(experience)}
+              isJoined={enrolledIds.has(experience.id)}
+            />
+          ))}
+        </div>
       </div>
 
       <ExperienceDetailModal
