@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Explore from "./pages/Explore";
 import Luggage from "./pages/Luggage";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
@@ -25,6 +26,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/explore" element={<Explore />} />
               <Route path="/luggage" element={<Luggage />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/onboarding" element={<Onboarding />} />
