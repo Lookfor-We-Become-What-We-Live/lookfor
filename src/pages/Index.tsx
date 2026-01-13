@@ -426,7 +426,7 @@ const Index = () => {
             />
             <h2 className="text-2xl font-bold mb-2">Lookfor</h2>
             <p className="text-muted-foreground max-w-md">
-              We are the experiences that we have.
+              We are the experiences that we live.
             </p>
           </div>
         )}
