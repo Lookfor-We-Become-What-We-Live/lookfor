@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Settings as SettingsIcon, Camera } from "lucide-react";
+import { User, Settings as SettingsIcon, Camera, Plus } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -236,8 +236,17 @@ const Luggage = () => {
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
+        <div className="container flex h-16 items-center justify-between">
           <h1 className="text-xl font-semibold">Luggage</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => navigate("/")}
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Create</span>
+          </Button>
         </div>
       </header>
       <div className="container py-8">

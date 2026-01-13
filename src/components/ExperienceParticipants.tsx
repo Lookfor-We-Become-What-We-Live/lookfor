@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { User, Users, ChevronDown, ChevronUp } from "lucide-react";
@@ -16,6 +17,7 @@ interface ExperienceParticipantsProps {
 }
 
 const ExperienceParticipants = ({ experienceId }: ExperienceParticipantsProps) => {
+  const { user } = useAuth();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -50,7 +52,11 @@ const ExperienceParticipants = ({ experienceId }: ExperienceParticipantsProps) =
 
       if (profileError) throw profileError;
 
-      setParticipants(profiles || []);
+      // Filter out the current user from the participants list
+      const filteredProfiles = (profiles || []).filter(
+        (p) => p.user_id !== user?.id
+      );
+      setParticipants(filteredProfiles);
     } catch (error) {
       console.error("Error fetching participants:", error);
     } finally {
