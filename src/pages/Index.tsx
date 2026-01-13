@@ -424,9 +424,9 @@ const Index = () => {
               alt="Lookfor Logo" 
               className="w-24 h-24 rounded-2xl object-cover mb-6"
             />
-            <h2 className="text-2xl font-bold mb-2">Welcome to Lookfor</h2>
+            <h2 className="text-2xl font-bold mb-2">Lookfor</h2>
             <p className="text-muted-foreground max-w-md">
-              Discover and share unique experiences. Use the buttons above to search by keyword, location, or date.
+              We are the experiences that we have.
             </p>
           </div>
         )}
