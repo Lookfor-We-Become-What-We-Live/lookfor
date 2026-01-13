@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import Navigation from "@/components/Navigation";
+import BottomNav from "@/components/BottomNav";
 import ExperienceCard from "@/components/ExperienceCard";
 import ExperienceDetailModal from "@/components/ExperienceDetailModal";
 import ExperienceParticipants from "@/components/ExperienceParticipants";
@@ -233,8 +233,13 @@ const Luggage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center">
+          <h1 className="text-xl font-semibold">Luggage</h1>
+        </div>
+      </header>
       <div className="container py-8">
         {profile && (
           <Card className="p-6 mb-8">
@@ -352,6 +357,8 @@ const Luggage = () => {
         isEnrolled={true}
         onEnrollmentChange={fetchEnrollments}
       />
+
+      <BottomNav />
     </div>
   );
 };
