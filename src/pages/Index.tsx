@@ -331,7 +331,7 @@ const Index = () => {
 
         {/* Tab Content */}
         {activeTab === "what" && (
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-6 animate-fade-in">
             <SearchBar
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
@@ -344,19 +344,20 @@ const Index = () => {
         )}
 
         {activeTab === "where" && (
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-6 animate-fade-in">
             <div style={{ height: "50vh", minHeight: "350px" }} className="w-full rounded-lg overflow-hidden">
               <MapView
                 experiences={filteredExperiences}
                 selectedExperienceId={selectedExperienceId}
                 onMarkerClick={handleMarkerClick}
+                userLocation={userLocation}
               />
             </div>
           </div>
         )}
 
         {activeTab === "when" && (
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-6 animate-fade-in">
             <div className="flex flex-col md:flex-row gap-4 items-start">
               <div className="bg-card rounded-lg border p-4">
                 <CalendarComponent
