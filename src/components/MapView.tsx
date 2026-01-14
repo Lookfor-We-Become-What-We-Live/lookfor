@@ -19,16 +19,19 @@ interface MapViewProps {
   experiences: Experience[];
   selectedExperienceId: string | null;
   onMarkerClick: (experienceId: string) => void;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
 const MapView = ({
   experiences,
   selectedExperienceId,
   onMarkerClick,
+  userLocation,
 }: MapViewProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -138,6 +141,42 @@ const MapView = ({
       });
     }
   }, [selectedExperienceId, experiences]);
+
+  // Add user location marker (red pin)
+  useEffect(() => {
+    if (!map.current || !userLocation) return;
+
+    // Remove existing user marker
+    if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+    }
+
+    // Create red pin for user location
+    const el = document.createElement("div");
+    el.className = "user-location-marker";
+    el.style.width = "36px";
+    el.style.height = "36px";
+    el.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='%23ef4444' stroke='white' stroke-width='2'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'%3E%3C/path%3E%3Ccircle cx='12' cy='10' r='3' fill='white'%3E%3C/circle%3E%3C/svg%3E")`;
+    el.style.backgroundSize = "contain";
+    el.style.filter = "drop-shadow(0 2px 4px rgba(0,0,0,0.3))";
+
+    userMarkerRef.current = new mapboxgl.Marker(el)
+      .setLngLat([userLocation.lng, userLocation.lat])
+      .addTo(map.current);
+
+    // Center map on user location initially if no experiences
+    if (experiences.length === 0) {
+      map.current.flyTo({
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 13,
+        duration: 1000,
+      });
+    }
+
+    return () => {
+      userMarkerRef.current?.remove();
+    };
+  }, [userLocation, experiences.length]);
 
   if (loading) {
     return (
