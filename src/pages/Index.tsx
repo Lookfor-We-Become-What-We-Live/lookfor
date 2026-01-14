@@ -388,31 +388,50 @@ const Index = () => {
         {/* Results */}
         {activeTab && (
           <div className="mt-6">
-            <h2 className="text-xl font-bold mb-4">
-              {filteredExperiences.length} Experience{filteredExperiences.length !== 1 ? "s" : ""} Found
-            </h2>
-            {filteredExperiences.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No experiences found.</p>
-                <p className="text-sm mt-2">Try adjusting your filters.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredExperiences.map((experience) => (
-                  <div
-                    key={experience.id}
-                    ref={(el) => (cardRefs.current[experience.id] = el)}
-                  >
-                    <ExperienceCard
-                      {...experience}
-                      onClick={() => handleCardClick(experience)}
-                      isSelected={selectedExperienceId === experience.id}
-                      isJoined={enrolledIds.has(experience.id)}
-                    />
+            {/* Show results only when user has actively searched */}
+            {((activeTab === "what" && searchQuery) ||
+              (activeTab === "when" && (selectedDate || selectedTime))) ? (
+              <>
+                <h2 className="text-xl font-bold mb-4">
+                  {filteredExperiences.length} Experience{filteredExperiences.length !== 1 ? "s" : ""} Found
+                </h2>
+                {filteredExperiences.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No experiences found.</p>
+                    <p className="text-sm mt-2">Try adjusting your filters.</p>
                   </div>
-                ))}
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredExperiences.map((experience) => (
+                      <div
+                        key={experience.id}
+                        ref={(el) => (cardRefs.current[experience.id] = el)}
+                      >
+                        <ExperienceCard
+                          {...experience}
+                          onClick={() => handleCardClick(experience)}
+                          isSelected={selectedExperienceId === experience.id}
+                          isJoined={enrolledIds.has(experience.id)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : activeTab !== "where" ? (
+              // Show logo and tagline when no active search (except WHERE tab)
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <img 
+                  src={logoImage} 
+                  alt="Lookfor Logo" 
+                  className="w-20 h-20 rounded-2xl object-cover mb-4"
+                />
+                <h2 className="text-xl font-bold mb-2">Lookfor</h2>
+                <p className="text-muted-foreground max-w-md">
+                  We are the experiences that we live.
+                </p>
               </div>
-            )}
+            ) : null}
           </div>
         )}
 
