@@ -492,8 +492,6 @@ const Auth = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
                   className="pr-10"
                 />
                 <button
