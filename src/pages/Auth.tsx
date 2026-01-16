@@ -45,6 +45,13 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side password validation to prevent default Supabase error
+    if (password.length < 6) {
+      toast.error("Password must be at least 7 characters long and contain lowercase, uppercase and at least 1 special character.");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -117,6 +124,13 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side password validation to prevent default Supabase error
+    if (password.length < 6) {
+      toast.error("Password must be at least 7 characters long and contain lowercase, uppercase and at least 1 special character.");
+      return;
+    }
+    
     setLoading(true);
 
     try {

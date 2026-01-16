@@ -151,14 +151,52 @@ const MapView = ({
       userMarkerRef.current.remove();
     }
 
-    // Create red pin for user location
+    // Create pulsing dot for user location (Google Maps style)
     const el = document.createElement("div");
     el.className = "user-location-marker";
-    el.style.width = "36px";
-    el.style.height = "36px";
-    el.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='%23ef4444' stroke='white' stroke-width='2'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'%3E%3C/path%3E%3Ccircle cx='12' cy='10' r='3' fill='white'%3E%3C/circle%3E%3C/svg%3E")`;
-    el.style.backgroundSize = "contain";
-    el.style.filter = "drop-shadow(0 2px 4px rgba(0,0,0,0.3))";
+    el.innerHTML = `
+      <div style="position: relative; width: 24px; height: 24px;">
+        <div style="
+          position: absolute;
+          width: 24px;
+          height: 24px;
+          background-color: rgba(66, 133, 244, 0.2);
+          border-radius: 50%;
+          animation: pulse-ring 2s ease-out infinite;
+        "></div>
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 14px;
+          height: 14px;
+          background-color: #4285F4;
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        "></div>
+      </div>
+    `;
+    
+    // Add pulse animation styles if not already added
+    if (!document.getElementById('user-location-pulse-style')) {
+      const style = document.createElement('style');
+      style.id = 'user-location-pulse-style';
+      style.textContent = `
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(2.5);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     userMarkerRef.current = new mapboxgl.Marker(el)
       .setLngLat([userLocation.lng, userLocation.lat])
