@@ -140,6 +140,12 @@ const ExperienceDetailModal = ({
         });
 
         if (error) {
+          // Check if capacity is full
+          if (error.message?.includes("CAPACITY_FULL")) {
+            toast.error("No spots left!");
+            setLoading(false);
+            return;
+          }
           // If already enrolled but cancelled, update status
           if (error.code === "23505") {
             const { error: updateError } = await supabase
@@ -148,7 +154,15 @@ const ExperienceDetailModal = ({
               .eq("user_id", user.id)
               .eq("experience_id", experience.id);
 
-            if (updateError) throw updateError;
+            if (updateError) {
+              // Check capacity error on update too
+              if (updateError.message?.includes("CAPACITY_FULL")) {
+                toast.error("No spots left!");
+                setLoading(false);
+                return;
+              }
+              throw updateError;
+            }
             toast.success("Joined the experience!");
           } else {
             throw error;
