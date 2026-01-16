@@ -142,9 +142,13 @@ const MapView = ({
     }
   }, [selectedExperienceId, experiences]);
 
-  // Add user location marker (red pin)
+  // Add user location marker (pulsing blue dot)
   useEffect(() => {
-    if (!map.current || !userLocation) return;
+    if (!map.current || !userLocation || !apiKey) return;
+    
+    // Wait for map to be fully loaded
+    const addUserMarker = () => {
+      if (!map.current) return;
 
     // Remove existing user marker
     if (userMarkerRef.current) {
@@ -198,23 +202,32 @@ const MapView = ({
       document.head.appendChild(style);
     }
 
-    userMarkerRef.current = new mapboxgl.Marker(el)
-      .setLngLat([userLocation.lng, userLocation.lat])
-      .addTo(map.current);
+      userMarkerRef.current = new mapboxgl.Marker(el)
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .addTo(map.current);
 
-    // Center map on user location initially if no experiences
-    if (experiences.length === 0) {
-      map.current.flyTo({
-        center: [userLocation.lng, userLocation.lat],
-        zoom: 13,
-        duration: 1000,
-      });
+      // Center map on user location initially if no experiences
+      if (experiences.length === 0) {
+        map.current.flyTo({
+          center: [userLocation.lng, userLocation.lat],
+          zoom: 13,
+          duration: 1000,
+        });
+      }
+    };
+
+    // If map is already loaded, add marker immediately
+    if (map.current.loaded()) {
+      addUserMarker();
+    } else {
+      // Otherwise wait for map to load
+      map.current.on('load', addUserMarker);
     }
 
     return () => {
       userMarkerRef.current?.remove();
     };
-  }, [userLocation, experiences.length]);
+  }, [userLocation, experiences.length, apiKey]);
 
   if (loading) {
     return (
