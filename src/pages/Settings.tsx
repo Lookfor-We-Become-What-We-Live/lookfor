@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, Lock, Moon, Sun, ArrowLeft, Trash2 } from "lucide-react";
+import { LogOut, Lock, ArrowLeft, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,12 +20,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { useTheme } from "next-themes";
 
 const Settings = () => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -91,9 +89,6 @@ const Settings = () => {
     navigate("/auth");
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
 
   const handleDeleteAccount = async () => {
     setDeletingAccount(true);
@@ -187,22 +182,6 @@ const Settings = () => {
                 {updatingPassword ? "Updating..." : "Update Password"}
               </Button>
             </form>
-          </Card>
-
-          {/* Theme Toggle */}
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-              Theme
-            </h3>
-            <div className="flex items-center justify-between">
-              <p className="text-muted-foreground">
-                Current theme: {theme === "dark" ? "Dark" : "Light"}
-              </p>
-              <Button onClick={toggleTheme} variant="outline">
-                Switch to {theme === "dark" ? "Light" : "Dark"} Mode
-              </Button>
-            </div>
           </Card>
 
           {/* Sign Out */}
