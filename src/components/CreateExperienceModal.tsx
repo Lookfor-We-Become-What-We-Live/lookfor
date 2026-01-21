@@ -144,6 +144,7 @@ const CreateExperienceModal = ({
               value={formData.title}
               onChange={(e) => handleChange("title", e.target.value)}
               placeholder="e.g., Sunset Yoga on the Beach"
+              maxLength={200}
               required
             />
           </div>
@@ -156,6 +157,7 @@ const CreateExperienceModal = ({
               onChange={(e) => handleChange("description", e.target.value)}
               placeholder="Describe your experience in detail..."
               rows={4}
+              maxLength={5000}
               required
             />
           </div>
@@ -187,6 +189,7 @@ const CreateExperienceModal = ({
                 value={formData.tags}
                 onChange={(e) => handleChange("tags", e.target.value)}
                 placeholder="e.g., yoga, outdoor, sunset"
+                maxLength={500}
               />
             </div>
           </div>
