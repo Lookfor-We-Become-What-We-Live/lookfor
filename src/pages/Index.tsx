@@ -8,7 +8,7 @@ import ExperienceDetailModal from "@/components/ExperienceDetailModal";
 import CreateExperienceModal from "@/components/CreateExperienceModal";
 import MapView from "@/components/MapView";
 import SearchBar from "@/components/SearchBar";
-import LocationSearchInput from "@/components/LocationSearchInput";
+
 import { Loader2, Search, MapPin, Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -346,18 +346,9 @@ const Index = () => {
 
         {activeTab === "where" && (
           <div className="space-y-4 mb-6 animate-fade-in">
-            <div className="mb-4">
-              <LocationSearchInput
-                onLocationSelect={(location) => {
-                  if (location) {
-                    setUserLocation({ lat: location.lat, lng: location.lng });
-                  }
-                }}
-              />
-            </div>
             <div style={{ height: "50vh", minHeight: "350px" }} className="w-full rounded-lg overflow-hidden">
               <MapView
-                experiences={experiences}
+                experiences={experiences.filter(exp => exp.locationLat && exp.locationLng)}
                 selectedExperienceId={selectedExperienceId}
                 onMarkerClick={handleMarkerClick}
                 userLocation={userLocation}
