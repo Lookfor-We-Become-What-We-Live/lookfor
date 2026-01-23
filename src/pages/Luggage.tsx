@@ -331,10 +331,11 @@ const Luggage = () => {
                   .filter(exp => new Date(exp.dateTimeStart) > new Date())
                   .map((experience) => (
                     <div key={`hosted-${experience.id}`} className="relative">
-                      <Badge className="absolute top-2 left-2 z-10 bg-primary">Hosting</Badge>
+                      <Badge className="absolute top-3 left-3 z-10 bg-primary text-primary-foreground">Hosting</Badge>
                       <ExperienceCard
                         {...experience}
                         onClick={() => handleCardClick(experience)}
+                        hideCategory
                       />
                     </div>
                   ))}
@@ -363,10 +364,11 @@ const Luggage = () => {
                   .map((experience) => (
                     <div key={`hosted-${experience.id}`} className="space-y-3">
                       <div className="relative">
-                        <Badge className="absolute top-2 left-2 z-10 bg-primary">Hosted</Badge>
+                        <Badge className="absolute top-3 left-3 z-10 bg-primary text-primary-foreground">Hosted</Badge>
                         <ExperienceCard
                           {...experience}
                           onClick={() => handleCardClick(experience)}
+                          hideCategory
                         />
                       </div>
                       <ExperienceParticipants experienceId={experience.id} />

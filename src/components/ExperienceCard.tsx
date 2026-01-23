@@ -18,6 +18,7 @@ interface ExperienceCardProps {
   onClick: () => void;
   isSelected?: boolean;
   isJoined?: boolean;
+  hideCategory?: boolean;
 }
 
 const ExperienceCard = ({
@@ -32,6 +33,7 @@ const ExperienceCard = ({
   onClick,
   isSelected,
   isJoined,
+  hideCategory,
 }: ExperienceCardProps) => {
   return (
     <Card
@@ -47,9 +49,11 @@ const ExperienceCard = ({
           className="w-full h-full object-cover transition-transform hover:scale-105"
         />
         <div className="absolute top-3 left-3 flex gap-2">
-          <Badge className="bg-white/90 dark:bg-slate-700 text-foreground dark:text-white hover:bg-white dark:hover:bg-slate-600">
-            {category}
-          </Badge>
+          {!hideCategory && (
+            <Badge className="bg-white/90 dark:bg-slate-700 text-foreground dark:text-white hover:bg-white dark:hover:bg-slate-600">
+              {category}
+            </Badge>
+          )}
           {isJoined && (
             <Badge className="bg-green-500 text-white hover:bg-green-600">
               Joined
