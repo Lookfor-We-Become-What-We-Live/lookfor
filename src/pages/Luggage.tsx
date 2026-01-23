@@ -309,23 +309,36 @@ const Luggage = () => {
         <Tabs defaultValue="active" className="w-full">
           <TabsList className="grid w-full max-w-lg grid-cols-2">
             <TabsTrigger value="active">
-              Joined ({activeEnrollments.length})
+              Active ({activeEnrollments.length + hostedExperiences.filter(exp => new Date(exp.dateTimeStart) > new Date()).length})
             </TabsTrigger>
             <TabsTrigger value="past">
-              Past ({pastEnrollments.length})
+              Past ({pastEnrollments.length + hostedExperiences.filter(exp => new Date(exp.dateTimeStart) <= new Date()).length})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="active" className="mt-6">
-            {activeEnrollments.length === 0 ? (
+            {activeEnrollments.length === 0 && hostedExperiences.filter(exp => new Date(exp.dateTimeStart) > new Date()).length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p>No joined experiences yet.</p>
+                <p>No active experiences yet.</p>
                 <p className="text-sm mt-2">
                   Explore the feed to find exciting experiences!
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Hosted experiences (upcoming) */}
+                {hostedExperiences
+                  .filter(exp => new Date(exp.dateTimeStart) > new Date())
+                  .map((experience) => (
+                    <div key={`hosted-${experience.id}`} className="relative">
+                      <Badge className="absolute top-2 left-2 z-10 bg-primary">Hosting</Badge>
+                      <ExperienceCard
+                        {...experience}
+                        onClick={() => handleCardClick(experience)}
+                      />
+                    </div>
+                  ))}
+                {/* Joined experiences (upcoming) */}
                 {activeEnrollments.map((enrollment) => (
                   <ExperienceCard
                     key={enrollment.id}
@@ -338,12 +351,28 @@ const Luggage = () => {
           </TabsContent>
 
           <TabsContent value="past" className="mt-6">
-            {pastEnrollments.length === 0 ? (
+            {pastEnrollments.length === 0 && hostedExperiences.filter(exp => new Date(exp.dateTimeStart) <= new Date()).length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <p>No past experiences yet.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Hosted experiences (past) */}
+                {hostedExperiences
+                  .filter(exp => new Date(exp.dateTimeStart) <= new Date())
+                  .map((experience) => (
+                    <div key={`hosted-${experience.id}`} className="space-y-3">
+                      <div className="relative">
+                        <Badge className="absolute top-2 left-2 z-10 bg-primary">Hosted</Badge>
+                        <ExperienceCard
+                          {...experience}
+                          onClick={() => handleCardClick(experience)}
+                        />
+                      </div>
+                      <ExperienceParticipants experienceId={experience.id} />
+                    </div>
+                  ))}
+                {/* Joined experiences (past) */}
                 {pastEnrollments.map((enrollment) => (
                   <div key={enrollment.id} className="space-y-3">
                     <ExperienceCard
