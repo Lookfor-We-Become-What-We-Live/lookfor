@@ -38,51 +38,51 @@ const ExperienceCard = ({
   return (
     <Card
       onClick={onClick}
-      className={`cursor-pointer transition-all hover:shadow-[var(--shadow-card-hover)] ${
+      className={`cursor-pointer transition-all hover:shadow-[var(--shadow-card-hover)] active:scale-[0.98] ${
         isSelected ? "ring-2 ring-primary shadow-[var(--shadow-card-hover)]" : "shadow-[var(--shadow-card)]"
       }`}
     >
-      <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
+      <div className="relative h-40 sm:h-48 w-full overflow-hidden rounded-t-lg">
         <img
           src={imageUrl || getCategoryImage(category)}
           alt={title}
           className="w-full h-full object-cover transition-transform hover:scale-105"
         />
-        <div className="absolute top-3 left-3 flex gap-2">
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex gap-1.5 sm:gap-2 flex-wrap">
           {!hideCategory && (
-            <Badge className="bg-white/90 dark:bg-slate-700 text-foreground dark:text-white hover:bg-white dark:hover:bg-slate-600">
+            <Badge className="bg-white/90 dark:bg-slate-700 text-foreground dark:text-white hover:bg-white dark:hover:bg-slate-600 text-xs">
               {category}
             </Badge>
           )}
           {isJoined && (
-            <Badge className="bg-green-500 text-white hover:bg-green-600">
+            <Badge className="bg-green-500 text-white hover:bg-green-600 text-xs">
               Joined
             </Badge>
           )}
         </div>
         {price !== null && price !== undefined && (
-          <div className="absolute top-3 right-3">
-            <Badge className="bg-primary text-primary-foreground">
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
+            <Badge className="bg-primary text-primary-foreground text-xs">
               {price === 0 ? "Free" : `$${price}`}
             </Badge>
           </div>
         )}
       </div>
-      <CardContent className="pt-4 space-y-3">
-        <h3 className="font-semibold text-lg line-clamp-2">{title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
-        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-primary" />
-            <span>{format(new Date(dateTimeStart), "MMM d, yyyy 'at' h:mm a")}</span>
+      <CardContent className="pt-3 sm:pt-4 space-y-2 sm:space-y-3">
+        <h3 className="font-semibold text-base sm:text-lg line-clamp-2">{title}</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{description}</p>
+        <div className="flex flex-col gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+            <span className="truncate">{format(new Date(dateTimeStart), "MMM d, yyyy 'at' h:mm a")}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-secondary" />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary flex-shrink-0" />
             <span className="line-clamp-1">{formatAddress(locationAddress)}</span>
           </div>
           {capacity && (
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-accent" />
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent flex-shrink-0" />
               <span>Up to {capacity} people</span>
             </div>
           )}

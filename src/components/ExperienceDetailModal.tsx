@@ -182,9 +182,9 @@ const ExperienceDetailModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="relative h-64 w-full -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 sm:p-6">
+        <DialogHeader className="p-0">
+          <div className="relative h-48 sm:h-64 w-full overflow-hidden sm:rounded-t-lg sm:-mx-6 sm:-mt-6 sm:mb-4">
             <img
               src={experience.imageUrl || getCategoryImage(experience.category)}
               alt={experience.title}
@@ -192,79 +192,81 @@ const ExperienceDetailModal = ({
             />
           </div>
           
-          {/* Host Profile */}
-          {hostProfile && experience.hostUserId && (
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={hostProfile.avatar_url || undefined} />
-                  <AvatarFallback>
-                    {hostProfile.display_name?.charAt(0)?.toUpperCase() || "H"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm text-muted-foreground">Hosted by</p>
-                  <p className="font-medium">{hostProfile.display_name || "Anonymous"}</p>
+          <div className="px-4 sm:px-0">
+            {/* Host Profile */}
+            {hostProfile && experience.hostUserId && (
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Avatar className="w-8 h-8 sm:w-10 sm:h-10">
+                    <AvatarImage src={hostProfile.avatar_url || undefined} />
+                    <AvatarFallback className="text-xs sm:text-base">
+                      {hostProfile.display_name?.charAt(0)?.toUpperCase() || "H"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Hosted by</p>
+                    <p className="font-medium text-sm sm:text-base">{hostProfile.display_name || "Anonymous"}</p>
+                  </div>
                 </div>
+                <ReportUserDialog 
+                  reportedUserId={experience.hostUserId} 
+                  reportedUserName={hostProfile.display_name || "Anonymous"} 
+                />
               </div>
-              <ReportUserDialog 
-                reportedUserId={experience.hostUserId} 
-                reportedUserName={hostProfile.display_name || "Anonymous"} 
-              />
-            </div>
-          )}
-          
-          <DialogTitle className="text-2xl">{experience.title}</DialogTitle>
-          <DialogDescription className="space-y-4 pt-4">
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{experience.category}</Badge>
-              {experience.tags.map((tag) => (
-                <Badge key={tag} variant="outline">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-            <p className="text-base text-foreground">{experience.description}</p>
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <Calendar className="w-5 h-5 text-primary" />
-                <span>{format(new Date(experience.dateTimeStart), "EEEE, MMMM d, yyyy 'at' h:mm a")}</span>
+            )}
+            
+            <DialogTitle className="text-xl sm:text-2xl">{experience.title}</DialogTitle>
+            <DialogDescription className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                <Badge variant="secondary" className="text-xs sm:text-sm">{experience.category}</Badge>
+                {experience.tags.map((tag) => (
+                  <Badge key={tag} variant="outline" className="text-xs sm:text-sm">
+                    {tag}
+                  </Badge>
+                ))}
               </div>
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <MapPin className="w-5 h-5 text-secondary" />
-                <span>{experience.locationAddress}</span>
-              </div>
-              {experience.capacity && (
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  <Users className="w-5 h-5 text-accent" />
-                  <span>
-                    <strong>{enrollmentCount}</strong> / {experience.capacity} people joined
-                  </span>
+              <p className="text-sm sm:text-base text-foreground">{experience.description}</p>
+              <div className="space-y-2 sm:space-y-3 pt-1 sm:pt-2">
+                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                  <span>{format(new Date(experience.dateTimeStart), "EEEE, MMMM d, yyyy 'at' h:mm a")}</span>
                 </div>
-              )}
-              {experience.price !== null && experience.price !== undefined && (
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  <DollarSign className="w-5 h-5 text-accent" />
-                  <span className="font-semibold">
-                    {experience.price === 0 ? "Free" : `$${experience.price}`}
-                  </span>
+                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-secondary flex-shrink-0" />
+                  <span className="break-words">{experience.locationAddress}</span>
                 </div>
-              )}
-            </div>
-          </DialogDescription>
+                {experience.capacity && (
+                  <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                    <span>
+                      <strong>{enrollmentCount}</strong> / {experience.capacity} people joined
+                    </span>
+                  </div>
+                )}
+                {experience.price !== null && experience.price !== undefined && (
+                  <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                    <span className="font-semibold">
+                      {experience.price === 0 ? "Free" : `$${experience.price}`}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </DialogDescription>
+          </div>
         </DialogHeader>
         
         {/* Participants Section */}
-        <div className="pt-4 border-t">
+        <div className="pt-3 sm:pt-4 border-t mx-4 sm:mx-0">
           <ExperienceParticipants experienceId={experience.id} />
         </div>
         
         {!isHost && (
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-3 sm:pt-4 px-4 pb-4 sm:px-0 sm:pb-0">
             <Button
               onClick={handleEnroll}
               disabled={loading || (isEnrolled && isPastExperience)}
-              className="flex-1"
+              className="flex-1 h-11 sm:h-10 text-sm sm:text-base"
               variant={isEnrolled ? "outline" : "default"}
             >
               {loading ? "Loading..." : isEnrolled ? (isPastExperience ? "Experience Completed" : "Leave Experience") : "Join Experience"}
@@ -273,7 +275,9 @@ const ExperienceDetailModal = ({
         )}
         
         {/* Comments Section */}
-        <ExperienceComments experienceId={experience.id} />
+        <div className="px-4 pb-4 sm:px-0 sm:pb-0">
+          <ExperienceComments experienceId={experience.id} />
+        </div>
       </DialogContent>
     </Dialog>
   );

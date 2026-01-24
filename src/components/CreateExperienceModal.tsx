@@ -129,16 +129,16 @@ const CreateExperienceModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Create New Experience</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Create New Experience</DialogTitle>
+          <DialogDescription className="text-sm">
             Share an amazing experience with the community
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2 sm:pt-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
+            <Label htmlFor="title" className="text-sm">Title *</Label>
             <Input
               id="title"
               value={formData.title}
@@ -146,30 +146,32 @@ const CreateExperienceModal = ({
               placeholder="e.g., Sunset Yoga on the Beach"
               maxLength={200}
               required
+              className="h-11 sm:h-10"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description" className="text-sm">Description *</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
               placeholder="Describe your experience in detail..."
-              rows={4}
+              rows={3}
               maxLength={5000}
               required
+              className="text-base sm:text-sm"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="category" className="text-sm">Category *</Label>
               <Select
                 value={formData.category}
                 onValueChange={(value) => handleChange("category", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-11 sm:h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -183,19 +185,20 @@ const CreateExperienceModal = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Label htmlFor="tags" className="text-sm">Tags (comma-separated)</Label>
               <Input
                 id="tags"
                 value={formData.tags}
                 onChange={(e) => handleChange("tags", e.target.value)}
                 placeholder="e.g., yoga, outdoor, sunset"
                 maxLength={500}
+                className="h-11 sm:h-10"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateTimeStart" className="flex items-center gap-2">
+            <Label htmlFor="dateTimeStart" className="flex items-center gap-2 text-sm">
               <Calendar className="w-4 h-4 text-primary" />
               Date & Time *
             </Label>
@@ -205,6 +208,7 @@ const CreateExperienceModal = ({
               value={formData.dateTimeStart}
               onChange={(e) => handleChange("dateTimeStart", e.target.value)}
               required
+              className="h-11 sm:h-10"
             />
           </div>
 
@@ -220,9 +224,9 @@ const CreateExperienceModal = ({
             }}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price" className="flex items-center gap-2">
+              <Label htmlFor="price" className="flex items-center gap-2 text-sm">
                 <DollarSign className="w-4 h-4 text-accent" />
                 Price (leave empty for free)
               </Label>
@@ -239,11 +243,11 @@ const CreateExperienceModal = ({
                     }
                   }}
                   placeholder="e.g., 10 or 10 - 15"
-                  className="flex-1"
+                  className="flex-1 h-11 sm:h-10"
                 />
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button type="button" variant="outline" size="icon" className="shrink-0">
+                    <Button type="button" variant="outline" size="icon" className="shrink-0 h-11 w-11 sm:h-10 sm:w-10">
                       {currencies.find(c => c.code === currency)?.symbol || "$"}
                     </Button>
                   </PopoverTrigger>
@@ -267,9 +271,9 @@ const CreateExperienceModal = ({
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="capacity" className="flex items-center gap-2">
+              <Label htmlFor="capacity" className="flex items-center gap-2 text-sm">
                 <Users className="w-4 h-4 text-accent" />
-                How many people are you looking for?
+                How many people?
               </Label>
               <Input
                 id="capacity"
@@ -283,21 +287,22 @@ const CreateExperienceModal = ({
                   }
                 }}
                 placeholder="e.g., 5 or 3 - 5"
+                className="h-11 sm:h-10"
               />
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2 sm:pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 h-11 sm:h-10"
               disabled={loading}
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={loading}>
+            <Button type="submit" className="flex-1 h-11 sm:h-10" disabled={loading}>
               {loading ? "Creating..." : "Create Experience"}
             </Button>
           </div>

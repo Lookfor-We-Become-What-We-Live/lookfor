@@ -172,13 +172,16 @@ const Explore = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-20">
-      <div className="container py-4">
-        <h1 className="text-2xl font-bold">Explore</h1>
+    <div 
+      className="min-h-screen flex flex-col bg-background"
+      style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
+    >
+      <div className="container py-3 sm:py-4">
+        <h1 className="text-xl sm:text-2xl font-bold">Explore</h1>
       </div>
 
-      <div className="container py-4 flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="container py-3 sm:py-4 flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredExperiences.map((experience) => (
             <ExperienceCard
               key={experience.id}

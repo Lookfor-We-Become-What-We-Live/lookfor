@@ -233,15 +233,18 @@ const Luggage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div 
+      className="min-h-screen bg-background"
+      style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
+    >
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <h1 className="text-xl font-semibold">Luggage</h1>
+        <div className="container flex h-14 sm:h-16 items-center justify-between">
+          <h1 className="text-lg sm:text-xl font-semibold">Luggage</h1>
           <Button
             variant="outline"
             size="sm"
-            className="gap-2"
+            className="gap-2 h-9 sm:h-10"
             onClick={() => navigate("/")}
           >
             <Plus className="w-4 h-4" />
@@ -249,20 +252,20 @@ const Luggage = () => {
           </Button>
         </div>
       </header>
-      <div className="container py-8">
+      <div className="container py-4 sm:py-8">
         {profile && (
-          <Card className="p-6 mb-8">
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="relative">
-                <Avatar className="w-24 h-24 cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
+          <Card className="p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+              <div className="relative flex-shrink-0">
+                <Avatar className="w-20 h-20 sm:w-24 sm:h-24 cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
                   <AvatarImage src={profile.avatar_url || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    <User className="w-12 h-12" />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xl sm:text-2xl">
+                    <User className="w-10 h-10 sm:w-12 sm:h-12" />
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer"
+                <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1.5 sm:p-2 cursor-pointer"
                   onClick={() => document.getElementById('avatar-upload')?.click()}>
-                  <Camera className="w-4 h-4" />
+                  <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
                 <Input
                   id="avatar-upload"
@@ -273,13 +276,13 @@ const Luggage = () => {
                   disabled={uploadingAvatar}
                 />
               </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h2 className="text-2xl font-bold mb-2">
+              <div className="flex-1 text-center sm:text-left min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold mb-2 truncate">
                   {profile.display_name || "Anonymous User"}
                 </h2>
-                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center sm:justify-start">
                   {profile.interests?.map((interest) => (
-                    <Badge key={interest} variant="secondary">
+                    <Badge key={interest} variant="secondary" className="text-xs sm:text-sm">
                       {interest}
                     </Badge>
                   ))}
@@ -289,17 +292,17 @@ const Luggage = () => {
           </Card>
         )}
         
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Your Luggage</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Your Luggage</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage your experiences and adventures
             </p>
           </div>
           <Button
             onClick={() => navigate("/settings")}
             variant="outline"
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto"
           >
             <SettingsIcon className="w-4 h-4" />
             Settings
@@ -308,30 +311,30 @@ const Luggage = () => {
 
         <Tabs defaultValue="active" className="w-full">
           <TabsList className="grid w-full max-w-lg grid-cols-2">
-            <TabsTrigger value="active">
+            <TabsTrigger value="active" className="text-xs sm:text-sm">
               Active ({activeEnrollments.length + hostedExperiences.filter(exp => new Date(exp.dateTimeStart) > new Date()).length})
             </TabsTrigger>
-            <TabsTrigger value="past">
+            <TabsTrigger value="past" className="text-xs sm:text-sm">
               Past ({pastEnrollments.length + hostedExperiences.filter(exp => new Date(exp.dateTimeStart) <= new Date()).length})
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="active" className="mt-6">
+          <TabsContent value="active" className="mt-4 sm:mt-6">
             {activeEnrollments.length === 0 && hostedExperiences.filter(exp => new Date(exp.dateTimeStart) > new Date()).length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-8 sm:py-12 text-muted-foreground">
                 <p>No active experiences yet.</p>
                 <p className="text-sm mt-2">
                   Explore the feed to find exciting experiences!
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Hosted experiences (upcoming) */}
                 {hostedExperiences
                   .filter(exp => new Date(exp.dateTimeStart) > new Date())
                   .map((experience) => (
                     <div key={`hosted-${experience.id}`} className="relative">
-                      <Badge className="absolute top-3 left-3 z-10 bg-primary text-primary-foreground">Hosting</Badge>
+                      <Badge className="absolute top-3 left-3 z-10 bg-primary text-primary-foreground text-xs">Hosting</Badge>
                       <ExperienceCard
                         {...experience}
                         onClick={() => handleCardClick(experience)}
@@ -351,20 +354,20 @@ const Luggage = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="past" className="mt-6">
+          <TabsContent value="past" className="mt-4 sm:mt-6">
             {pastEnrollments.length === 0 && hostedExperiences.filter(exp => new Date(exp.dateTimeStart) <= new Date()).length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-8 sm:py-12 text-muted-foreground">
                 <p>No past experiences yet.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Hosted experiences (past) */}
                 {hostedExperiences
                   .filter(exp => new Date(exp.dateTimeStart) <= new Date())
                   .map((experience) => (
-                    <div key={`hosted-${experience.id}`} className="space-y-3">
+                    <div key={`hosted-${experience.id}`} className="space-y-2 sm:space-y-3">
                       <div className="relative">
-                        <Badge className="absolute top-3 left-3 z-10 bg-primary text-primary-foreground">Hosted</Badge>
+                        <Badge className="absolute top-3 left-3 z-10 bg-primary text-primary-foreground text-xs">Hosted</Badge>
                         <ExperienceCard
                           {...experience}
                           onClick={() => handleCardClick(experience)}
@@ -376,7 +379,7 @@ const Luggage = () => {
                   ))}
                 {/* Joined experiences (past) */}
                 {pastEnrollments.map((enrollment) => (
-                  <div key={enrollment.id} className="space-y-3">
+                  <div key={enrollment.id} className="space-y-2 sm:space-y-3">
                     <ExperienceCard
                       {...enrollment.experience}
                       onClick={() => handleCardClick(enrollment.experience)}
