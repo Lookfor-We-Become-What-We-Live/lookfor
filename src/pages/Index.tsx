@@ -267,22 +267,25 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-20">
+    <div 
+      className="min-h-screen flex flex-col bg-background"
+      style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
+    >
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2 font-semibold text-xl">
+        <div className="container flex h-14 sm:h-16 items-center justify-between">
+          <div className="flex items-center gap-2 font-semibold text-lg sm:text-xl">
             <img 
               src={logoImage} 
               alt="Lookfor Logo" 
-              className="w-10 h-10 rounded-lg object-cover"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover"
             />
             <span className="hidden sm:inline">Lookfor</span>
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="gap-2"
+            className="gap-2 h-9 sm:h-10"
             onClick={() => setCreateModalOpen(true)}
           >
             <Plus className="w-4 h-4" />
@@ -292,40 +295,40 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <div className="container py-6 flex-1">
+      <div className="container py-4 sm:py-6 flex-1">
         {/* Three Main Buttons */}
-        <div className="flex gap-3 mb-6">
+        <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-6">
           <Button
             variant={activeTab === "what" ? "default" : "outline"}
             className={cn(
-              "flex-1 h-14 text-lg font-semibold",
+              "flex-1 h-11 sm:h-14 text-sm sm:text-lg font-semibold",
               activeTab === "what" && "bg-primary text-primary-foreground"
             )}
             onClick={() => handleTabClick("what")}
           >
-            <Search className="w-5 h-5 mr-2" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
             WHAT
           </Button>
           <Button
             variant={activeTab === "where" ? "default" : "outline"}
             className={cn(
-              "flex-1 h-14 text-lg font-semibold",
+              "flex-1 h-11 sm:h-14 text-sm sm:text-lg font-semibold",
               activeTab === "where" && "bg-primary text-primary-foreground"
             )}
             onClick={() => handleTabClick("where")}
           >
-            <MapPin className="w-5 h-5 mr-2" />
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
             WHERE
           </Button>
           <Button
             variant={activeTab === "when" ? "default" : "outline"}
             className={cn(
-              "flex-1 h-14 text-lg font-semibold",
+              "flex-1 h-11 sm:h-14 text-sm sm:text-lg font-semibold",
               activeTab === "when" && "bg-primary text-primary-foreground"
             )}
             onClick={() => handleTabClick("when")}
           >
-            <Calendar className="w-5 h-5 mr-2" />
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
             WHEN
           </Button>
         </div>
@@ -345,8 +348,11 @@ const Index = () => {
         )}
 
         {activeTab === "where" && (
-          <div className="space-y-4 mb-6 animate-fade-in">
-            <div style={{ height: "50vh", minHeight: "350px" }} className="w-full rounded-lg overflow-hidden">
+          <div className="space-y-4 mb-4 sm:mb-6 animate-fade-in">
+            <div 
+              className="w-full rounded-lg overflow-hidden"
+              style={{ height: "calc(100vh - 220px)", minHeight: "300px", maxHeight: "600px" }}
+            >
               <MapView
                 experiences={experiences.filter(exp => exp.locationLat && exp.locationLng)}
                 selectedExperienceId={selectedExperienceId}
@@ -358,10 +364,10 @@ const Index = () => {
         )}
 
         {activeTab === "when" && (
-          <div className="space-y-4 mb-6 animate-fade-in">
-            <div className="flex flex-col md:flex-row gap-4 items-start">
-              <div className="bg-card rounded-lg border p-4">
-              <CalendarComponent
+          <div className="space-y-4 mb-4 sm:mb-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-start">
+              <div className="bg-card rounded-lg border p-2 sm:p-4 w-full sm:w-auto overflow-x-auto">
+                <CalendarComponent
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
@@ -370,19 +376,19 @@ const Index = () => {
                     today.setHours(0, 0, 0, 0);
                     return date < today;
                   }}
-                  className="rounded-md pointer-events-auto"
+                  className="rounded-md pointer-events-auto mx-auto"
                 />
               </div>
-              <div className="flex flex-col gap-3 w-full md:w-auto">
+              <div className="flex flex-col gap-3 w-full sm:w-auto">
                 <label className="text-sm font-medium">Time (optional)</label>
                 <input
                   type="time"
                   value={selectedTime}
                   onChange={(e) => setSelectedTime(e.target.value)}
-                  className="flex h-10 w-full md:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex h-11 sm:h-10 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
                 {(selectedDate || selectedTime) && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <Button variant="ghost" size="sm" className="h-10" onClick={clearFilters}>
                     Clear filters
                   </Button>
                 )}
@@ -393,21 +399,21 @@ const Index = () => {
 
         {/* Results */}
         {activeTab && (
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             {/* Show results only when user has actively searched */}
             {((activeTab === "what" && searchQuery) ||
               (activeTab === "when" && (selectedDate || selectedTime))) ? (
               <>
-                <h2 className="text-xl font-bold mb-4">
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
                   {filteredExperiences.length} Experience{filteredExperiences.length !== 1 ? "s" : ""} Found
                 </h2>
                 {filteredExperiences.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-center py-8 sm:py-12 text-muted-foreground">
                     <p>No experiences found.</p>
                     <p className="text-sm mt-2">Try adjusting your filters.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {filteredExperiences.map((experience) => (
                       <div
                         key={experience.id}
@@ -426,14 +432,14 @@ const Index = () => {
               </>
             ) : activeTab !== "where" ? (
               // Show logo and tagline when no active search (except WHERE tab)
-              <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4">
                 <img 
                   src={logoImage} 
                   alt="Lookfor Logo" 
-                  className="w-20 h-20 rounded-2xl object-cover mb-4"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover mb-3 sm:mb-4"
                 />
-                <h2 className="text-xl font-bold mb-2">Lookfor</h2>
-                <p className="text-muted-foreground max-w-md">
+                <h2 className="text-lg sm:text-xl font-bold mb-2">Lookfor</h2>
+                <p className="text-muted-foreground max-w-md text-sm sm:text-base">
                   We are the experiences that we live.
                 </p>
               </div>
@@ -443,14 +449,14 @@ const Index = () => {
 
         {/* Welcome Message when no tab selected */}
         {!activeTab && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center px-4">
             <img 
               src={logoImage} 
               alt="Lookfor Logo" 
-              className="w-24 h-24 rounded-2xl object-cover mb-6"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover mb-4 sm:mb-6"
             />
-            <h2 className="text-2xl font-bold mb-2">Lookfor</h2>
-            <p className="text-muted-foreground max-w-md">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">Lookfor</h2>
+            <p className="text-muted-foreground max-w-md text-sm sm:text-base">
               We are the experiences that we live.
             </p>
           </div>
