@@ -19,6 +19,7 @@ interface MapViewProps {
   experiences: Experience[];
   selectedExperienceId: string | null;
   onMarkerClick: (experienceId: string) => void;
+  onMapClick?: () => void;
   userLocation?: { lat: number; lng: number } | null;
 }
 
@@ -26,6 +27,7 @@ const MapView = ({
   experiences,
   selectedExperienceId,
   onMarkerClick,
+  onMapClick,
   userLocation,
 }: MapViewProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -78,6 +80,11 @@ const MapView = ({
       });
 
       map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+      
+      // Add click handler for map background to dismiss selection
+      map.current.on('click', () => {
+        onMapClick?.();
+      });
     } catch (err) {
       console.error("Error initializing map:", err);
       setError("Failed to initialize map");
@@ -86,7 +93,7 @@ const MapView = ({
     return () => {
       map.current?.remove();
     };
-  }, [apiKey]);
+  }, [apiKey, onMapClick]);
 
   useEffect(() => {
     if (!map.current) return;
@@ -107,7 +114,8 @@ const MapView = ({
       }' stroke='white' stroke-width='2'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'%3E%3C/path%3E%3Ccircle cx='12' cy='10' r='3' fill='white'%3E%3C/circle%3E%3C/svg%3E")`;
       el.style.backgroundSize = "contain";
 
-      el.addEventListener("click", () => {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent map click from firing
         onMarkerClick(experience.id);
       });
 
@@ -146,9 +154,9 @@ const MapView = ({
     }
   }, [selectedExperienceId, experiences]);
 
-  // Add user location marker (pulsing blue dot) - always visible
+  // Add user location marker (pulsing blue dot) - always visible regardless of experiences
   useEffect(() => {
-    if (!map.current || !apiKey) return;
+    if (!map.current || !apiKey || !userLocation) return;
     
     const addUserMarker = () => {
       if (!map.current || !userLocation) return;
@@ -156,6 +164,7 @@ const MapView = ({
       // Remove existing user marker
       if (userMarkerRef.current) {
         userMarkerRef.current.remove();
+        userMarkerRef.current = null;
       }
 
       // Create pulsing dot for user location (Google Maps style)
@@ -210,18 +219,26 @@ const MapView = ({
         .addTo(map.current);
     };
 
-    // If map is already loaded, add marker immediately
-    if (map.current.loaded()) {
+    // Wait for map to be ready before adding marker
+    const mapInstance = map.current;
+    
+    if (mapInstance.loaded()) {
       addUserMarker();
     } else {
-      // Otherwise wait for map to load
-      map.current.on('load', addUserMarker);
+      const onLoad = () => addUserMarker();
+      mapInstance.on('load', onLoad);
+      return () => {
+        mapInstance.off('load', onLoad);
+        userMarkerRef.current?.remove();
+        userMarkerRef.current = null;
+      };
     }
 
     return () => {
       userMarkerRef.current?.remove();
+      userMarkerRef.current = null;
     };
-  }, [userLocation, apiKey]);
+  }, [userLocation, apiKey, experiences]);
 
   // Center map on user location when first available
   useEffect(() => {

@@ -352,6 +352,10 @@ const Index = () => {
                 experiences={experiences.filter(exp => exp.locationLat && exp.locationLng)}
                 selectedExperienceId={selectedExperienceId}
                 onMarkerClick={handleMarkerClick}
+                onMapClick={() => {
+                  setSelectedExperienceId(null);
+                  setSelectedExperience(null);
+                }}
                 userLocation={userLocation}
               />
             </div>
