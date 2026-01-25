@@ -118,15 +118,19 @@ const MapView = ({
       markersRef.current[experience.id] = marker;
     });
 
-    // Fit bounds to show all markers
-    if (experiences.length > 0) {
+    // Fit bounds to show all markers including user location
+    if (experiences.length > 0 || userLocation) {
       const bounds = new mapboxgl.LngLatBounds();
       experiences.forEach((exp) => {
         bounds.extend([exp.locationLng, exp.locationLat]);
       });
+      // Include user location in bounds if available
+      if (userLocation) {
+        bounds.extend([userLocation.lng, userLocation.lat]);
+      }
       map.current.fitBounds(bounds, { padding: 50, maxZoom: 13 });
     }
-  }, [experiences, selectedExperienceId, onMarkerClick]);
+  }, [experiences, selectedExperienceId, onMarkerClick, userLocation]);
 
   // Fly to selected experience
   useEffect(() => {
@@ -142,78 +146,68 @@ const MapView = ({
     }
   }, [selectedExperienceId, experiences]);
 
-  // Add user location marker (pulsing blue dot)
+  // Add user location marker (pulsing blue dot) - always visible
   useEffect(() => {
-    if (!map.current || !userLocation || !apiKey) return;
+    if (!map.current || !apiKey) return;
     
-    // Wait for map to be fully loaded
     const addUserMarker = () => {
-      if (!map.current) return;
+      if (!map.current || !userLocation) return;
 
-    // Remove existing user marker
-    if (userMarkerRef.current) {
-      userMarkerRef.current.remove();
-    }
+      // Remove existing user marker
+      if (userMarkerRef.current) {
+        userMarkerRef.current.remove();
+      }
 
-    // Create pulsing dot for user location (Google Maps style)
-    const el = document.createElement("div");
-    el.className = "user-location-marker";
-    el.innerHTML = `
-      <div style="position: relative; width: 24px; height: 24px;">
-        <div style="
-          position: absolute;
-          width: 24px;
-          height: 24px;
-          background-color: rgba(66, 133, 244, 0.2);
-          border-radius: 50%;
-          animation: pulse-ring 2s ease-out infinite;
-        "></div>
-        <div style="
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 14px;
-          height: 14px;
-          background-color: #4285F4;
-          border: 3px solid white;
-          border-radius: 50%;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        "></div>
-      </div>
-    `;
-    
-    // Add pulse animation styles if not already added
-    if (!document.getElementById('user-location-pulse-style')) {
-      const style = document.createElement('style');
-      style.id = 'user-location-pulse-style';
-      style.textContent = `
-        @keyframes pulse-ring {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(2.5);
-            opacity: 0;
-          }
-        }
+      // Create pulsing dot for user location (Google Maps style)
+      const el = document.createElement("div");
+      el.className = "user-location-marker";
+      el.innerHTML = `
+        <div style="position: relative; width: 24px; height: 24px;">
+          <div style="
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(66, 133, 244, 0.2);
+            border-radius: 50%;
+            animation: pulse-ring 2s ease-out infinite;
+          "></div>
+          <div style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background-color: #4285F4;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          "></div>
+        </div>
       `;
-      document.head.appendChild(style);
-    }
+      
+      // Add pulse animation styles if not already added
+      if (!document.getElementById('user-location-pulse-style')) {
+        const style = document.createElement('style');
+        style.id = 'user-location-pulse-style';
+        style.textContent = `
+          @keyframes pulse-ring {
+            0% {
+              transform: scale(1);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(2.5);
+              opacity: 0;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
 
       userMarkerRef.current = new mapboxgl.Marker(el)
         .setLngLat([userLocation.lng, userLocation.lat])
         .addTo(map.current);
-
-      // Center map on user location initially if no experiences
-      if (experiences.length === 0) {
-        map.current.flyTo({
-          center: [userLocation.lng, userLocation.lat],
-          zoom: 13,
-          duration: 1000,
-        });
-      }
     };
 
     // If map is already loaded, add marker immediately
@@ -227,7 +221,21 @@ const MapView = ({
     return () => {
       userMarkerRef.current?.remove();
     };
-  }, [userLocation, experiences.length, apiKey]);
+  }, [userLocation, apiKey]);
+
+  // Center map on user location when first available
+  useEffect(() => {
+    if (!map.current || !userLocation) return;
+    
+    // Only center on user if no experiences or no experience selected
+    if (experiences.length === 0 && !selectedExperienceId) {
+      map.current.flyTo({
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 13,
+        duration: 1000,
+      });
+    }
+  }, [userLocation, experiences.length, selectedExperienceId]);
 
   if (loading) {
     return (
