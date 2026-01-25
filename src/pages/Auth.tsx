@@ -5,25 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import lookforLogo from "@/assets/lookfor-logo.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff } from "lucide-react";
 
 type AuthStep = "credentials" | "verify" | "forgot-password" | "reset-sent";
-type AuthMethod = "email" | "phone";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState<AuthStep>("credentials");
-  const [authMethod, setAuthMethod] = useState<AuthMethod>("email");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
@@ -33,7 +27,6 @@ const Auth = () => {
       navigate("/");
     }
   }, [user, navigate]);
-
 
   const getErrorMessage = (error: any): string => {
     const msg = error?.message?.toLowerCase() || "";
@@ -46,7 +39,6 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Client-side password validation to prevent default Supabase error
     if (password.length < 6) {
       toast.error("Password must be at least 7 characters long and contain lowercase, uppercase and at least 1 special character.");
       return;
@@ -55,65 +47,20 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (authMethod === "email") {
-        const redirectUrl = `${window.location.origin}/onboarding`;
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-          },
-        });
-
-        if (error) {
-          toast.error(getErrorMessage(error));
-        } else if (data.user) {
-          toast.success("Check your email for a confirmation link!");
-          setStep("verify");
-        }
-      } else {
-        // Phone sign-up with OTP
-        const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-        const { error } = await supabase.auth.signUp({
-          phone: formattedPhone,
-          password,
-        });
-
-        if (error) {
-          toast.error(getErrorMessage(error));
-        } else {
-          toast.success("Check your phone for a verification code!");
-          setStep("verify");
-        }
-      }
-    } catch (error: any) {
-      toast.error("An error occurred. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length !== 6) {
-      toast.error("Please enter the complete 6-digit code");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-      const { error } = await supabase.auth.verifyOtp({
-        phone: formattedPhone,
-        token: otp,
-        type: "sms",
+      const redirectUrl = `${window.location.origin}/onboarding`;
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
       });
 
       if (error) {
-        toast.error("An error occurred. Please try again later.");
-      } else {
-        toast.success("Phone verified! Let's complete your profile.");
-        navigate("/onboarding");
+        toast.error(getErrorMessage(error));
+      } else if (data.user) {
+        toast.success("Check your email for a confirmation link!");
+        setStep("verify");
       }
     } catch (error: any) {
       toast.error("An error occurred. Please try again later.");
@@ -125,7 +72,6 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Client-side password validation to prevent default Supabase error
     if (password.length < 6) {
       toast.error("Password must be at least 7 characters long and contain lowercase, uppercase and at least 1 special character.");
       return;
@@ -134,26 +80,12 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (authMethod === "email") {
-        const { error } = await signIn(email, password);
-        if (error) {
-          toast.error(getErrorMessage(error));
-        } else {
-          toast.success("Welcome back!");
-          navigate("/");
-        }
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast.error(getErrorMessage(error));
       } else {
-        const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-        const { error } = await supabase.auth.signInWithPassword({
-          phone: formattedPhone,
-          password,
-        });
-        if (error) {
-          toast.error(getErrorMessage(error));
-        } else {
-          toast.success("Welcome back!");
-          navigate("/");
-        }
+        toast.success("Welcome back!");
+        navigate("/");
       }
     } catch (error: any) {
       toast.error("An error occurred. Please try again later.");
@@ -173,7 +105,6 @@ const Auth = () => {
     try {
       const resetUrl = `${window.location.origin}/auth?reset=true`;
       
-      // Send password reset via Supabase (this generates the secure token)
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: resetUrl,
       });
@@ -194,27 +125,14 @@ const Auth = () => {
   const handleResendCode = async () => {
     setLoading(true);
     try {
-      if (authMethod === "phone") {
-        const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-        const { error } = await supabase.auth.resend({
-          type: "sms",
-          phone: formattedPhone,
-        });
-        if (error) {
-          toast.error("An error occurred. Please try again later.");
-        } else {
-          toast.success("Verification code resent!");
-        }
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      });
+      if (error) {
+        toast.error("An error occurred. Please try again later.");
       } else {
-        const { error } = await supabase.auth.resend({
-          type: "signup",
-          email,
-        });
-        if (error) {
-          toast.error("An error occurred. Please try again later.");
-        } else {
-          toast.success("Confirmation email resent!");
-        }
+        toast.success("Confirmation email resent!");
       }
     } catch (error: any) {
       toast.error("An error occurred. Please try again later.");
@@ -313,7 +231,7 @@ const Auth = () => {
   }
 
   // Email verification step (waiting for link click)
-  if (step === "verify" && authMethod === "email") {
+  if (step === "verify") {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         <Card className="w-full max-w-md">
@@ -357,74 +275,6 @@ const Auth = () => {
     );
   }
 
-  // Phone OTP verification step
-  if (step === "verify" && authMethod === "phone") {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-2 text-center">
-            <div className="flex justify-center mb-4">
-              <img
-                src={lookforLogo}
-                alt="Lookfor"
-                className="w-20 h-20 rounded-2xl object-cover"
-              />
-            </div>
-            <CardTitle className="text-2xl font-bold">Verify Your Phone</CardTitle>
-            <CardDescription>
-              Enter the 6-digit code sent to <strong>{phone}</strong>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleVerifyOtp} className="space-y-6">
-              <div className="flex justify-center">
-                <InputOTP
-                  maxLength={6}
-                  value={otp}
-                  onChange={(value) => setOtp(value)}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-              <Button type="submit" className="w-full" disabled={loading || otp.length !== 6}>
-                {loading ? "Verifying..." : "Verify & Continue"}
-              </Button>
-            </form>
-            <div className="mt-4 space-y-2">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleResendCode}
-                disabled={loading}
-              >
-                {loading ? "Sending..." : "Resend code"}
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => {
-                  setStep("credentials");
-                  setPhone("");
-                  setPassword("");
-                  setOtp("");
-                }}
-              >
-                Use a different phone number
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
       <Card className="w-full max-w-md">
@@ -446,42 +296,18 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={authMethod} onValueChange={(v) => setAuthMethod(v as AuthMethod)} className="mb-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="email">Email</TabsTrigger>
-              <TabsTrigger value="phone">Phone</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
           <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-4">
-            {authMethod === "email" ? (
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+1234567890"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Include country code (e.g., +1 for US)
-                </p>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -509,7 +335,7 @@ const Auth = () => {
             </Button>
           </form>
 
-          {isLogin && authMethod === "email" && (
+          {isLogin && (
             <div className="mt-3 text-center">
               <button
                 type="button"
