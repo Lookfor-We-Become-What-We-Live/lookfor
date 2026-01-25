@@ -231,13 +231,8 @@ const Index = () => {
   const handleMarkerClick = (experienceId: string) => {
     const experience = experiences.find((exp) => exp.id === experienceId);
     if (experience) {
+      setSelectedExperience(experience);
       setSelectedExperienceId(experienceId);
-      setTimeout(() => {
-        cardRefs.current[experienceId]?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }, 100);
     }
   };
 
@@ -351,7 +346,7 @@ const Index = () => {
           <div className="space-y-4 mb-4 sm:mb-6 animate-fade-in">
             <div 
               className="w-full rounded-lg overflow-hidden"
-              style={{ height: "calc(100vh - 220px)", minHeight: "300px", maxHeight: "600px" }}
+              style={{ height: selectedExperienceId ? "calc(100vh - 420px)" : "calc(100vh - 220px)", minHeight: "250px", maxHeight: selectedExperienceId ? "400px" : "600px", transition: "height 0.3s ease-out" }}
             >
               <MapView
                 experiences={experiences.filter(exp => exp.locationLat && exp.locationLng)}
@@ -359,6 +354,38 @@ const Index = () => {
                 onMarkerClick={handleMarkerClick}
                 userLocation={userLocation}
               />
+            </div>
+            
+            {/* Selected Experience Card with slide-in animation */}
+            <div 
+              className={cn(
+                "transform transition-all duration-300 ease-out",
+                selectedExperienceId && selectedExperience
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4 pointer-events-none h-0 overflow-hidden"
+              )}
+            >
+              {selectedExperience && (
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute -top-2 right-0 z-10 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setSelectedExperienceId(null);
+                      setSelectedExperience(null);
+                    }}
+                  >
+                    ✕ Close
+                  </Button>
+                  <ExperienceCard
+                    {...selectedExperience}
+                    onClick={() => setModalOpen(true)}
+                    isSelected={true}
+                    isJoined={enrolledIds.has(selectedExperience.id)}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
